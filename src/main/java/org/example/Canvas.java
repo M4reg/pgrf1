@@ -47,12 +47,12 @@ public class Canvas {
     public void draw() {
         clear();
         for (int i = 10; i <= 100; i++) {
-            img.setRGB(i,55, 0xFFFFFF);
-            img.setRGB(55,i, 0xFFFFFF);
-            img.setRGB(i,i, 0xFFFFFF);
+            img.setRGB(i, 55, 0xFFFFFF);
+            img.setRGB(55, i, 0xFFFFFF);
+            img.setRGB(i, i, 0xFFFFFF);
             img.setRGB(i, 110 - i, 0xFFFFFF);
         }
-        trivialni(400, 400, 50, 50);
+        trivialni(300, 150, 120, 180);
     }
 
     public void start() {
@@ -63,19 +63,37 @@ public class Canvas {
 
     private void trivialni(int x1, int y1, int x2, int y2) {
 
-        if (x1>x2){
-            int tmp = x1;
-            x1 = x2;
-            x2 = tmp;
-        }
+        // Pokud jsou x1 a x2 stejné, jedná se o vertikální přímku
+        if (x1 == x2) {
 
-        float k = (float) (y2 - y1) / (float) (x2 - x1);
-        float q = (float) y1 - k * x1;
+            // Zajistíme, že kreslíme od menšího y k většímu
+            if (y1 > y2) {
+                int tmp = y1;
+                y1 = y2;
+                y2 = tmp;
+            }
+            // Kreslíme vertikální přímku
+            for (int y = y1; y <= y2; y++) {
+                img.setRGB(x1, y, 0xFFFFFF);
+            }
 
-        for (int x = x1; x <= x2; x++) {
-            int y = Math.round(k * x + q);
-            img.setRGB(x, y, 0xFFFFFF);
-        }
+        } else
+            if (x1 > x2) {
+                int tmp = x1;
+                x1 = x2;
+                x2 = tmp;
+                tmp = y1;
+                y1 = y2;
+                y2 = tmp;
+            }
+
+            float k = (float) (y2 - y1) / (float) (x2 - x1);
+            float q = (float) y1 - k * x1;
+
+            for (int x = x1; x <= x2; x++) {
+                int y = Math.round(k * x + q);
+                img.setRGB(x, y, 0xFFFFFF);
+            }
     }
 
     public static void main(String[] args) {
