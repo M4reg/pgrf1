@@ -1,5 +1,7 @@
 package controller;
 
+import rasterizer.LineRasterizer;
+import rasterizer.Raster;
 import view.Panel;
 
 public class Controller2D {
@@ -10,5 +12,10 @@ public class Controller2D {
 
         //inicial objektu
         //inicial Listener
+    }
+
+    public void initObjects(Raster raster) {
+        //lineRasterizer = new LineRasterizer(raster);
+        lineRasterizer = new LineRasterizer(raster);
     }
 }
