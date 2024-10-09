@@ -16,20 +16,19 @@ public class RasterBufferedImage implements Raster {
         g.drawImage(image, 0, 0, null);
     }
 
-    public void draw(RasterBufferedImage raster){
+    public void draw(RasterBufferedImage raster) {
         Graphics g = image.getGraphics();
         g.setColor(new Color(color));
         g.fillRect(0, 0, getWidth(), getHeight());
         g.drawImage(raster.getImage(), 0, 0, null);
     }
 
-
     public BufferedImage getImage() {
         return image;
     }
 
     @Override
-    public void Clear() {
+    public void clear() {
         Graphics g = image.getGraphics();
         g.setColor(new Color(color));
         g.fillRect(0, 0, getWidth(), getHeight());
@@ -57,6 +56,6 @@ public class RasterBufferedImage implements Raster {
 
     @Override
     public void setPixel(int x, int y, int color) {
-        image.setRGB(x,y,color);
+        image.setRGB(x, y, color);
     }
 }

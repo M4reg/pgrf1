@@ -2,9 +2,9 @@ package rasterizer;
 
 public interface Raster {
 
-    //setPixel,getPixel, clear, setClearColor, getWidth, getheight
+    // setPixel, getPixel, clear, setClearColor, getWidth, getHeight
 
-    void Clear();
+    void clear();
 
     void setClearColor(int color);
 
@@ -15,6 +15,5 @@ public interface Raster {
     int getPixel(int x, int y);
 
     void setPixel(int x, int y, int color);
-
 
 }

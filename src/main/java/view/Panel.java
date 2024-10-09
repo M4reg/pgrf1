@@ -7,10 +7,12 @@ import java.awt.*;
 
 public class Panel extends JPanel {
 
+    private RasterBufferedImage rasterBufferedImage;
     private static final int WIDTH = 800, HEIGHT = 600;
 
     public Panel() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
+
         rasterBufferedImage = new RasterBufferedImage(WIDTH, HEIGHT);
         rasterBufferedImage.setClearColor(Color.BLACK.getRGB());
     }
@@ -23,7 +25,10 @@ public class Panel extends JPanel {
 
     public void clear(int color){
         rasterBufferedImage.setClearColor(color);
-        rasterBufferedImage.clear
+        rasterBufferedImage.clear();
+    }
+    public RasterBufferedImage getRasterBufferedImage(){
+        return rasterBufferedImage;
     }
 
 }
