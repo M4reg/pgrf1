@@ -23,8 +23,8 @@ public class Controller2D {
     public void initObjects(Raster raster) {
         lineRasterizer = new LineRasterizerGraphics(raster);
         // lineRasterizer = new LineRasterizerTrivial(raster);
-        lineRasterizer.setColor(Color.RED);
-        lineRasterizer.rasterize(new Line(20, 20, 500, 500));
+        lineRasterizer.setColor(0x31E628);
+        lineRasterizer.rasterize(new Line(20, 200, 500, 500));
 
     }
 }
