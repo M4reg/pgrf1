@@ -13,7 +13,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
-
 public class Controller2D {
     private final Panel panel;
     private LineRasterizer lineRasterizer;
@@ -23,6 +22,7 @@ public class Controller2D {
     private boolean drawingPolygon = false;
     private Point startPoint;
     private ArrayList<Line> lines;
+    private Point currentEndPoint;
 
     public Controller2D(Panel panel) {
         this.panel = panel;
@@ -32,13 +32,9 @@ public class Controller2D {
 
     public void initObjects(RasterBufferedImage raster) {
         lineRasterizer = new LineRasterizerGraphics(raster);
-        lineRasterizer.setColor(0x31E628);
-
         polygon = new Polygon();
         polygonRasterizer = new PolygonRasterizer(lineRasterizer);
-
         lines = new ArrayList<>();
-
     }
 
     public void initListeners(Panel panel) {
@@ -46,24 +42,45 @@ public class Controller2D {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (drawingPolygon) {
-                    panel.clear(Color.BLACK.getRGB());
                     polygon.addPoint(new Point(e.getX(), e.getY()));
-                    polygonRasterizer.rasterize(polygon);
+                    // Přidání bodu do polygonu, pokud je aktivní režim kreslení polygonu
+                    redraw(); // Vykreslení všeho znovu, včetně polygonu a čar
+                } else {
+                    // Začátek kreslení čáry
+                    startPoint = new Point(e.getX(), e.getY());
+                    currentEndPoint = startPoint;
+                }
+                panel.repaint();
+            }
 
-                    for(Line line : lines){
-                        lineRasterizer.rasterize(line);
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (!drawingPolygon && startPoint != null) {
+                    Line line = new Line(startPoint, new Point(e.getX(), e.getY()));
+                    lines.add(line); // Přidání čáry do seznamu
+                    lineRasterizer.rasterize(line); // Rasterizace konečné čáry
+                    startPoint = null;
+                    currentEndPoint = null;
+                }
+                redraw(); // Vykreslení všeho znovu
+                panel.repaint();
+            }
+        });
 
-                    }
+        panel.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (!drawingPolygon && startPoint != null) {
+                    // Aktualizace aktuálního koncového bodu během táhnutí
+                    currentEndPoint = new Point(e.getX(), e.getY());
 
-                }else {
-                    if (startPoint == null){ //první klik
-                        startPoint = new Point(e.getX(), e.getY());
-                    }else{
-                        Line line = new Line(startPoint, new Point(e.getX(),e.getY()));
-                        lines.add(line);
-                        lineRasterizer.rasterize(line);
-                        startPoint = null;
-                    }
+                    // Vyčištění panelu
+                    panel.clear(Color.BLACK.getRGB());
+                    redraw();
+
+                    //Vykreslení náhledu čáry
+                    lineRasterizer.setColor(Color.RED.getRGB());
+                    lineRasterizer.rasterize(new Line(startPoint, currentEndPoint));
                 }
                 panel.repaint();
             }
@@ -72,21 +89,36 @@ public class Controller2D {
         panel.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_C){
+                if (e.getKeyCode() == KeyEvent.VK_C) {
                     panel.clear(Color.BLACK.getRGB());
                     polygon.clearPoints();
                     lines.clear();
                     panel.repaint();
                     System.out.println("Smazáno");
-                }else if (e.getKeyCode() == KeyEvent.VK_P){
+                } else if (e.getKeyCode() == KeyEvent.VK_P) {
                     drawingPolygon = true;
                     System.out.println("Přepnuto na kreslení polygonu");
                 } else if (e.getKeyCode() == KeyEvent.VK_L) {
                     drawingPolygon = false;
                     System.out.println("Přepnuto na kreslení čáry");
                 }
+
+                redraw();
+                panel.repaint();
             }
         });
     }
-}
 
+    private void redraw() {
+
+        panel.clear(Color.BLACK.getRGB()); // Vyčistit panel
+        // Znovu vykreslit polygon, pokud má nějaké body
+        if (polygon.getSize() > 0) {
+            polygonRasterizer.rasterize(polygon);
+        }
+        // Znovu vykresli všechny existující čáry
+        for (Line line : lines) {
+            lineRasterizer.rasterize(line);
+        }
+    }
+}
