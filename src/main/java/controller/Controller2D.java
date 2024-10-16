@@ -11,7 +11,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
+import java.util.ArrayList;
 
 
 public class Controller2D {
@@ -22,23 +22,22 @@ public class Controller2D {
     private PolygonRasterizer polygonRasterizer;
     private boolean drawingPolygon = false;
     private Point startPoint;
+    private ArrayList<Line> lines;
 
     public Controller2D(Panel panel) {
         this.panel = panel;
-
-
         initObjects(panel.getRasterBufferedImage());
         initListeners(panel);
     }
 
-    public void initObjects(Raster raster) {
+    public void initObjects(RasterBufferedImage raster) {
         lineRasterizer = new LineRasterizerGraphics(raster);
-        // lineRasterizer = new LineRasterizerTrivial(raster);
         lineRasterizer.setColor(0x31E628);
-        //lineRasterizer.rasterize(new Line(20, 200, 500, 500));
 
         polygon = new Polygon();
         polygonRasterizer = new PolygonRasterizer(lineRasterizer);
+
+        lines = new ArrayList<>();
 
     }
 
@@ -50,11 +49,18 @@ public class Controller2D {
                     panel.clear(Color.BLACK.getRGB());
                     polygon.addPoint(new Point(e.getX(), e.getY()));
                     polygonRasterizer.rasterize(polygon);
+
+                    for(Line line : lines){
+                        lineRasterizer.rasterize(line);
+
+                    }
+
                 }else {
                     if (startPoint == null){ //první klik
                         startPoint = new Point(e.getX(), e.getY());
                     }else{
                         Line line = new Line(startPoint, new Point(e.getX(),e.getY()));
+                        lines.add(line);
                         lineRasterizer.rasterize(line);
                         startPoint = null;
                     }
@@ -69,6 +75,7 @@ public class Controller2D {
                 if (e.getKeyCode() == KeyEvent.VK_C){
                     panel.clear(Color.BLACK.getRGB());
                     polygon.clearPoints();
+                    lines.clear();
                     panel.repaint();
                     System.out.println("Smazáno");
                 }else if (e.getKeyCode() == KeyEvent.VK_P){
