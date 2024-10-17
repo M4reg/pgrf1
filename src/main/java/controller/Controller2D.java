@@ -42,11 +42,14 @@ public class Controller2D {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (drawingPolygon) {
-                    if (polygon.getSize() < 2) {
-                        // První kliknutí přidá první bod
+                    if (polygon.getSize() == 0) {
+                        // První bod polygonu
                         polygon.addPoint(new Point(e.getX(), e.getY()));
-                    } else {
-                        // Pro více než 2 body začínáme kreslit pružnou čáru
+                        startPoint = new Point(e.getX(), e.getY()); // uložíme počáteční bod pro pružnou čáru
+                        currentEndPoint = startPoint;
+                    } else if(polygon.getSize() >= 1){
+
+                        // Po přidání druhého bodu již kreslíme pružné čáry
                         startPoint = new Point(e.getX(), e.getY());
                         currentEndPoint = startPoint;
                     }
@@ -65,10 +68,21 @@ public class Controller2D {
                 if (drawingPolygon && startPoint != null){
                     // Po uvolnění tlačítka přidáme bod do polygonu
                     polygon.addPoint(new Point(e.getX(), e.getY()));
+
+                    // Nastavení koncového bodu
+                    currentEndPoint = new Point(e.getX(), e.getY());
+
+                    // Pro druhý bod (polygon má teď 2 body) je třeba vykreslit čáru
+                    if (polygon.getSize() == 2) {
+                        lineRasterizer.setColor(Color.RED.getRGB());
+                        lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1)));
+                    }
+
                     startPoint = null;
                     currentEndPoint = null;
 
                 } else if (!drawingPolygon && startPoint != null) {
+                    // Pokud kreslíme úsečku
                     Line line = new Line(startPoint, new Point(e.getX(), e.getY()));
                     lines.add(line); // Přidání čáry do seznamu
                     lineRasterizer.rasterize(line); // Rasterizace konečné čáry
@@ -83,10 +97,20 @@ public class Controller2D {
         panel.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (drawingPolygon && startPoint != null && polygon.getSize() >= 2) {
+                if (drawingPolygon && polygon.getSize() == 1 && startPoint != null)
+                {
+                    // Pružná čára od prvního bodu polygonu
+                    currentEndPoint = new Point(e.getX(), e.getY());
+                    panel.clear(Color.BLACK.getRGB());
+                    redraw();
+
+                    // Pružná čára k prvnímu bodu
+                    lineRasterizer.setColor(Color.RED.getRGB());
+                    lineRasterizer.rasterize(new Line(polygon.getPoint(0), currentEndPoint));
+
+                } else if (drawingPolygon && startPoint != null && polygon.getSize() >= 2) {
                     // Pružná čára od posledního a prvního bodu polygonu
                     currentEndPoint = new Point(e.getX(), e.getY());
-
                     panel.clear(Color.BLACK.getRGB());
                     redraw();
 
@@ -136,15 +160,23 @@ public class Controller2D {
     }
 
     private void redraw() {
-
         panel.clear(Color.BLACK.getRGB()); // Vyčistit panel
+
         // Znovu vykreslit polygon, pokud má nějaké body
         if (polygon.getSize() > 0) {
             polygonRasterizer.rasterize(polygon);
         }
+
+        // Pokud kreslíme polygon a máme 2 body, čára mezi body bude viditelna
+        if (drawingPolygon && polygon.getSize() == 2) {
+            lineRasterizer.setColor(Color.RED.getRGB());
+            lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1)));
+        }
+
         // Znovu vykresli všechny existující čáry
         for (Line line : lines) {
             lineRasterizer.rasterize(line);
         }
+
     }
 }
