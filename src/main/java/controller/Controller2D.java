@@ -42,27 +42,40 @@ public class Controller2D {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (drawingPolygon) {
-                    polygon.addPoint(new Point(e.getX(), e.getY()));
-                    // Přidání bodu do polygonu, pokud je aktivní režim kreslení polygonu
-                    redraw(); // Vykreslení všeho znovu, včetně polygonu a čar
-                } else {
-                    // Začátek kreslení čáry
+                    if (polygon.getSize() < 2) {
+                        // První kliknutí přidá první bod
+                        polygon.addPoint(new Point(e.getX(), e.getY()));
+                    } else {
+                        // Pro více než 2 body začínáme kreslit pružnou čáru
+                        startPoint = new Point(e.getX(), e.getY());
+                        currentEndPoint = startPoint;
+                    }
+                    redraw();
+                }else {
+                    // Pokud nekreslíme polygon, můžeme kreslit čáru
                     startPoint = new Point(e.getX(), e.getY());
                     currentEndPoint = startPoint;
                 }
                 panel.repaint();
+
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (!drawingPolygon && startPoint != null) {
+                if (drawingPolygon && startPoint != null){
+                    // Po uvolnění tlačítka přidáme bod do polygonu
+                    polygon.addPoint(new Point(e.getX(), e.getY()));
+                    startPoint = null;
+                    currentEndPoint = null;
+
+                } else if (!drawingPolygon && startPoint != null) {
                     Line line = new Line(startPoint, new Point(e.getX(), e.getY()));
                     lines.add(line); // Přidání čáry do seznamu
                     lineRasterizer.rasterize(line); // Rasterizace konečné čáry
                     startPoint = null;
                     currentEndPoint = null;
                 }
-                redraw(); // Vykreslení všeho znovu
+                redraw(); // Aktualizace plátna
                 panel.repaint();
             }
         });
@@ -70,7 +83,20 @@ public class Controller2D {
         panel.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (!drawingPolygon && startPoint != null) {
+                if (drawingPolygon && startPoint != null && polygon.getSize() >= 2) {
+                    // Pružná čára od posledního a prvního bodu polygonu
+                    currentEndPoint = new Point(e.getX(), e.getY());
+
+                    panel.clear(Color.BLACK.getRGB());
+                    redraw();
+
+                    // Pružná čára k prvnímu bodu
+                    lineRasterizer.setColor(Color.RED.getRGB());
+                    lineRasterizer.rasterize(new Line(polygon.getPoint(0), currentEndPoint));
+                    // Pružná čára k poslednímu bodu
+                    lineRasterizer.rasterize(new Line(polygon.getPoint(polygon.getSize() - 1), currentEndPoint));
+
+                } else if (!drawingPolygon && startPoint != null) {
                     // Aktualizace aktuálního koncového bodu během táhnutí
                     currentEndPoint = new Point(e.getX(), e.getY());
 
