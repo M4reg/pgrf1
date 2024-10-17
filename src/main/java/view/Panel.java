@@ -5,10 +5,8 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Panel extends JPanel {
-
+    String stav = "off";
     private RasterBufferedImage rasterBufferedImage;
-
-
 
     private static final int WIDTH = 800, HEIGHT = 600;
 
@@ -18,7 +16,6 @@ public class Panel extends JPanel {
         //Aby panel mohl přijímat klávesové události
         setFocusable(true);
         requestFocusInWindow();
-
         rasterBufferedImage = new RasterBufferedImage(WIDTH, HEIGHT);
         rasterBufferedImage.setClearColor(Color.BLACK.getRGB());
 
@@ -32,8 +29,8 @@ public class Panel extends JPanel {
         //nápověda
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.PLAIN,14));
-        String help = "Pro smazání stiskni [C]  Pro kreslení přímku [L]  Pro kreslení polygonu [P]";
-        String modifiedhelp = help.replace("  ", "  " + " ".repeat(15));
+        String help = "Pro smazání stiskni [C]  Pro kreslení přímku [L]  Pro kreslení polygonu [P]  Pro režim zarovnávání [Shift]:"+ stav;
+        String modifiedhelp = help.replace("  ", "  " + " ".repeat(8));
         g.drawString(modifiedhelp, 10, getHeight()-10);
 
     }
@@ -45,6 +42,11 @@ public class Panel extends JPanel {
 
     public RasterBufferedImage getRasterBufferedImage(){
         return rasterBufferedImage;
+    }
+
+    public void updateStav(boolean isShiftPressed) {
+        stav = isShiftPressed ? "on" : "off";
+        repaint(); // Update display if necessary
     }
 
 }
