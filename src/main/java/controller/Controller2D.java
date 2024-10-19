@@ -5,7 +5,6 @@ import model.Point;
 import model.Polygon;
 import rasterizer.*;
 import view.Panel;
-
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -24,6 +23,7 @@ public class Controller2D {
     private ArrayList<Line> lines;
     private Point currentEndPoint;
     private boolean alignmentMode = false; //Pro sledování režimu kreslení
+    private final int thickness = 5;
 
     private boolean isShiftPressed = false;
 
@@ -36,7 +36,7 @@ public class Controller2D {
     public void initObjects(RasterBufferedImage raster) {
         lineRasterizer = new LineRasterizerGraphics(raster);
         polygon = new Polygon();
-        polygonRasterizer = new PolygonRasterizer(lineRasterizer);
+        polygonRasterizer = new PolygonRasterizer(lineRasterizer, thickness);
         lines = new ArrayList<>();
     }
 
@@ -77,7 +77,7 @@ public class Controller2D {
                     // Pro druhý bod (polygon má teď 2 body) je třeba vykreslit čáru
                     if (polygon.getSize() == 2) {
                         lineRasterizer.setColor(Color.GREEN.getRGB());
-                        lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1)));
+                        lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1),thickness));
                     }
 
                     startPoint = null;
@@ -87,12 +87,12 @@ public class Controller2D {
                     // Pokud kreslíme úsečku
                     if (isShiftPressed) {
                         // Použijeme zarovnaný koncový bod
-                        Line line = new Line(startPoint, currentEndPoint); // Použijeme zarovnaný bod
+                        Line line = new Line(startPoint, currentEndPoint,thickness); // Použijeme zarovnaný bod
                         lines.add(line); // Přidání čáry do seznamu
                         lineRasterizer.rasterize(line); // Rasterizace konečné čáry
                     } else {
                         // Pokud nekreslíme s Shiftem, použijeme aktuální pozici myši
-                        Line line = new Line(startPoint, new Point(e.getX(), e.getY()));
+                        Line line = new Line(startPoint, new Point(e.getX(), e.getY()),thickness);
                         lines.add(line); // Přidání čáry do seznamu
                         lineRasterizer.rasterize(line); // Rasterizace konečné čáry
                     }
@@ -115,7 +115,7 @@ public class Controller2D {
 
                     // Pružná čára k prvnímu bodu
                     lineRasterizer.setColor(Color.GREEN.getRGB());
-                    lineRasterizer.rasterize(new Line(polygon.getPoint(0), currentEndPoint));
+                    lineRasterizer.rasterize(new Line(polygon.getPoint(0), currentEndPoint, 1));
 
                 } else if (drawingPolygon && startPoint != null && polygon.getSize() >= 2) {
                     // Pružná čára od posledního a prvního bodu polygonu
@@ -125,9 +125,9 @@ public class Controller2D {
 
                     // Pružná čára k prvnímu bodu
                     lineRasterizer.setColor(Color.GREEN.getRGB());
-                    lineRasterizer.rasterize(new Line(polygon.getPoint(0), currentEndPoint));
+                    lineRasterizer.rasterize(new Line(polygon.getPoint(0), currentEndPoint, 1));
                     // Pružná čára k poslednímu bodu
-                    lineRasterizer.rasterize(new Line(polygon.getPoint(polygon.getSize() - 1), currentEndPoint));
+                    lineRasterizer.rasterize(new Line(polygon.getPoint(polygon.getSize() - 1), currentEndPoint, 1));
 
                 } else if (!drawingPolygon && startPoint != null) {
 
@@ -165,15 +165,15 @@ public class Controller2D {
                         } else if (angleDeg >= -67.5 && angleDeg < -22.5) {
                             nearestAngle = 315; // 315° (úhlopříčka dolů/doprava)
                         } else {
-                            nearestAngle = 0; // fallback
+                            nearestAngle = 0;
                         }
 
                         // Převod zarovnaného úhlu zpět na radiány
                         double radians = Math.toRadians(nearestAngle);
 
                         // Výpočet nového koncového bodu na základě zarovnaného úhlu
-                        int newX = (int) (startPoint.getX() + distance * Math.cos(radians));
-                        int newY = (int) (startPoint.getY() + distance * Math.sin(radians));
+                        int newX = (int) Math.round(startPoint.getX() + distance * Math.cos(radians));
+                        int newY = (int) Math.round(startPoint.getY() + distance * Math.sin(radians));
                         currentEndPoint = new Point(newX, newY);
 
                     } else {
@@ -187,7 +187,7 @@ public class Controller2D {
 
                     // Vykreslení náhledu čáry
                     lineRasterizer.setColor(Color.GREEN.getRGB());
-                    lineRasterizer.rasterize(new Line(startPoint, currentEndPoint));
+                    lineRasterizer.rasterize(new Line(startPoint, currentEndPoint, 1));
                 }
                 panel.repaint();
             }
@@ -237,7 +237,7 @@ public class Controller2D {
         // Pokud kreslíme polygon a máme 2 body, čára mezi body bude viditelna
         if (drawingPolygon && polygon.getSize() == 2) {
             lineRasterizer.setColor(Color.GREEN.getRGB());
-            lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1)));
+            lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1),thickness));
         }
 
         // Znovu vykresli všechny existující čáry

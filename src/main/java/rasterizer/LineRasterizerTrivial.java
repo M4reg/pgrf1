@@ -6,7 +6,7 @@ public class LineRasterizerTrivial extends LineRasterizer {
     }
 
     @Override
-    protected void drawLine(int x1, int y1, int x2, int y2) {
+    protected void drawLine(int x1, int y1, int x2, int y2, int thickness) {
 
 
         // Pokud jsou x1 a x2 stejné, jedná se o vertikální přímku
@@ -20,8 +20,11 @@ public class LineRasterizerTrivial extends LineRasterizer {
             }
             // Kreslíme vertikální přímku
             for (int y = y1; y <= y2; y++) {
-                raster.setPixel(x1, y, color.getRGB());
+                for (int t = -thickness / 2; t <= thickness / 2; t++) {
+                    raster.setPixel(x1 + t, y, color.getRGB()); // Tlustá čára vertikálně
+                }
             }
+            return;
 
         } else
         if (x1 > x2) {
@@ -38,7 +41,10 @@ public class LineRasterizerTrivial extends LineRasterizer {
 
         for (int x = x1; x <= x2; x++) {
             int y = Math.round(k * x + q);
-            raster.setPixel(x, y, color.getRGB());
+            // Vytvoříme tlustou čáru vykreslením bodů kolem původního bodu
+            for (int t = -thickness / 2; t <= thickness / 2; t++) {
+                raster.setPixel(x, y + t, color.getRGB()); // Tlustá čára horizontálně
+            }
         }
     }
 }

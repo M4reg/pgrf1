@@ -2,20 +2,23 @@ package model;
 
 public class Line {
     private final int x1, y1, x2, y2;
+    private final int thickness;
 
-    public Line(int x1, int y1, int x2, int y2) {
+
+    public Line(int x1, int y1, int x2, int y2, int thickness) {
         this.x1 = x1;
         this.y1 = y1;
         this.x2 = x2;
         this.y2 = y2;
-
+        this.thickness = thickness;
     }
 
-    public Line(Point p1, Point p2) {
+    public Line(Point p1, Point p2, int thickness) {
         this.x1 = p1.getX();
         this.y1 = p1.getY();
         this.x2 = p2.getX();
         this.y2 = p2.getY();
+        this.thickness = thickness;
     }
 
     public int getX1() {
@@ -32,6 +35,9 @@ public class Line {
 
     public int getY2() {
         return y2;
+    }
+    public int getThickness(){
+        return thickness;
     }
 }
 

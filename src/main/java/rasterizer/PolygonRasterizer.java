@@ -7,9 +7,11 @@ import model.Polygon;
 public class PolygonRasterizer {
     
     private LineRasterizer lineRasterizer;
+    private int thickness;
     
-    public PolygonRasterizer(LineRasterizer lineRasterizer) {
+    public PolygonRasterizer(LineRasterizer lineRasterizer, int thickness) {
         this.lineRasterizer = lineRasterizer;
+        this.thickness = thickness;
     }
 
 
@@ -40,7 +42,7 @@ public class PolygonRasterizer {
                 }
                 Point A = polygon.getPoint(indexA);
                 Point B = polygon.getPoint(indexB);
-                lineRasterizer.rasterize(new Line(A,B));
+                lineRasterizer.rasterize(new Line(A,B, thickness));
             }
 
         }
@@ -48,6 +50,9 @@ public class PolygonRasterizer {
     }
     public void setLineRasterizer(LineRasterizer lineRasterizer) {
         this.lineRasterizer = lineRasterizer;
+    }
+    public void setThickness(int thickness){
+        this.thickness = thickness;
     }
     
 }
