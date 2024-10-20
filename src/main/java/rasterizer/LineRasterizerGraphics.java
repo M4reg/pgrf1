@@ -2,7 +2,7 @@ package rasterizer;
 
 import java.awt.*;
 
-public class LineRasterizerGraphics extends LineRasterizer{
+public class LineRasterizerGraphics extends LineRasterizer {
     public LineRasterizerGraphics(Raster raster) {
         super(raster);
     }

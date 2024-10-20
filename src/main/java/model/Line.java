@@ -36,7 +36,8 @@ public class Line {
     public int getY2() {
         return y2;
     }
-    public int getThickness(){
+
+    public int getThickness() {
         return thickness;
     }
 }

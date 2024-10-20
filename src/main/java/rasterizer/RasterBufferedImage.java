@@ -16,13 +16,6 @@ public class RasterBufferedImage implements Raster {
         g.drawImage(image, 0, 0, null);
     }
 
-    public void draw(RasterBufferedImage raster) {
-        Graphics g = image.getGraphics();
-        g.setColor(new Color(color));
-        g.fillRect(0, 0, getWidth(), getHeight());
-        g.drawImage(raster.getImage(), 0, 0, null);
-    }
-
     public BufferedImage getImage() {
         return image;
     }

@@ -7,7 +7,15 @@ public class LineRasterizerTrivial extends LineRasterizer {
 
     @Override
     protected void drawLine(int x1, int y1, int x2, int y2, int thickness) {
+        /*
+            Triviální algoritmus
+            - výhody: jednoduchost, přehlednost, použití rovnice přímky, použitelný
+            pro všechny sklony čar
 
+            - nevýhody: nízká efektivita, chyby v zaokrouhlování díky tomu nemusí být
+            čára vykreslená přesně, možnost objevení zubatého efektu hrany
+
+        */
 
         // Pokud jsou x1 a x2 stejné, jedná se o vertikální přímku
         if (x1 == x2) {
@@ -21,13 +29,12 @@ public class LineRasterizerTrivial extends LineRasterizer {
             // Kreslíme vertikální přímku
             for (int y = y1; y <= y2; y++) {
                 for (int t = -thickness / 2; t <= thickness / 2; t++) {
-                    raster.setPixel(x1 + t, y, color.getRGB()); // Tlustá čára vertikálně
+                    raster.setPixel(x1 + t, y, color.getRGB());
                 }
             }
             return;
-
-        } else
-        if (x1 > x2) {
+            //prohození bodů aby se zajistilo vykreslení zleva doprava
+        } else if (x1 > x2) {
             int tmp = x1;
             x1 = x2;
             x2 = tmp;
@@ -36,6 +43,7 @@ public class LineRasterizerTrivial extends LineRasterizer {
             y2 = tmp;
         }
 
+        //výpočet sklonu k a průsečíku q
         float k = (float) (y2 - y1) / (float) (x2 - x1);
         float q = (float) y1 - k * x1;
 
@@ -43,7 +51,7 @@ public class LineRasterizerTrivial extends LineRasterizer {
             int y = Math.round(k * x + q);
             // Vytvoříme tlustou čáru vykreslením bodů kolem původního bodu
             for (int t = -thickness / 2; t <= thickness / 2; t++) {
-                raster.setPixel(x, y + t, color.getRGB()); // Tlustá čára horizontálně
+                raster.setPixel(x, y + t, color.getRGB());
             }
         }
     }

@@ -23,7 +23,8 @@ public class Polygon {
     public int getSize() {
         return this.points.size();
     }
-    public void clearPoints(){
+
+    public void clearPoints() {
         points.clear();
     }
 }

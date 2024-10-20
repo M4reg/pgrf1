@@ -13,9 +13,9 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 public class Controller2D {
+
     private final Panel panel;
     private LineRasterizer lineRasterizer;
-
     private Polygon polygon;
     private PolygonRasterizer polygonRasterizer;
     private boolean drawingPolygon = false;
@@ -24,8 +24,8 @@ public class Controller2D {
     private Point currentEndPoint;
     private boolean alignmentMode = false; //Pro sledování režimu kreslení
     private final int thickness = 5;
-
-    private boolean isShiftPressed = false;
+    private final double tolerance = 22.5;
+    private boolean isShiftPressed = false; //Pro sledování režimu zarovnávání
 
     public Controller2D(Panel panel) {
         this.panel = panel;
@@ -49,9 +49,9 @@ public class Controller2D {
                         // První bod polygonu
                         polygon.addPoint(new Point(e.getX(), e.getY()));
                         startPoint = new Point(e.getX(), e.getY()); // uložíme počáteční bod pro pružnou čáru
-                        currentEndPoint = startPoint;
-                    } else if (polygon.getSize() >= 1) {
+                        currentEndPoint = startPoint; //nastavení aktuálního koncového bodu
 
+                    } else if (polygon.getSize() >= 1) {
                         // Po přidání druhého bodu již kreslíme pružné čáry
                         startPoint = new Point(e.getX(), e.getY());
                         currentEndPoint = startPoint;
@@ -77,7 +77,7 @@ public class Controller2D {
                     // Pro druhý bod (polygon má teď 2 body) je třeba vykreslit čáru
                     if (polygon.getSize() == 2) {
                         lineRasterizer.setColor(Color.GREEN.getRGB());
-                        lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1),thickness));
+                        lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1), thickness));
                     }
 
                     startPoint = null;
@@ -87,12 +87,12 @@ public class Controller2D {
                     // Pokud kreslíme úsečku
                     if (isShiftPressed) {
                         // Použijeme zarovnaný koncový bod
-                        Line line = new Line(startPoint, currentEndPoint,thickness); // Použijeme zarovnaný bod
+                        Line line = new Line(startPoint, currentEndPoint, thickness); // Použijeme zarovnaný bod
                         lines.add(line); // Přidání čáry do seznamu
                         lineRasterizer.rasterize(line); // Rasterizace konečné čáry
                     } else {
                         // Pokud nekreslíme s Shiftem, použijeme aktuální pozici myši
-                        Line line = new Line(startPoint, new Point(e.getX(), e.getY()),thickness);
+                        Line line = new Line(startPoint, new Point(e.getX(), e.getY()), thickness);
                         lines.add(line); // Přidání čáry do seznamu
                         lineRasterizer.rasterize(line); // Rasterizace konečné čáry
                     }
@@ -146,33 +146,21 @@ public class Controller2D {
                         // Převod úhlu na stupně
                         double angleDeg = Math.toDegrees(angle);
 
-                        // Zarovnání na 0°, 45°, 90°, 180° (a jejich násobky)
-                        int nearestAngle;
-                        if (angleDeg >= -22.5 && angleDeg < 22.5) {
-                            nearestAngle = 0;   // Vodorovná doprava
-                        } else if (angleDeg >= 22.5 && angleDeg < 67.5) {
-                            nearestAngle = 45;  // 45°
-                        } else if (angleDeg >= 67.5 && angleDeg < 112.5) {
-                            nearestAngle = 90;  // 90° (svislá nahoru)
-                        } else if (angleDeg >= 112.5 && angleDeg < 157.5) {
-                            nearestAngle = 135; // 135° (úhlopříčka nahoru/doleva)
-                        } else if (angleDeg >= 157.5 || angleDeg < -157.5) {
-                            nearestAngle = 180; // 180° (vodorovná doleva)
-                        } else if (angleDeg >= -157.5 && angleDeg < -112.5) {
-                            nearestAngle = 225; // 225° (úhlopříčka dolů/doleva)
-                        } else if (angleDeg >= -112.5 && angleDeg < -67.5) {
-                            nearestAngle = 270; // 270° (svislá dolů)
-                        } else if (angleDeg >= -67.5 && angleDeg < -22.5) {
-                            nearestAngle = 315; // 315° (úhlopříčka dolů/doprava)
-                        } else {
-                            nearestAngle = 0;
+                        //Nejbližší úhel který je násobek 45
+                        int nearestAngle = (int) Math.toDegrees(angleDeg / 45) * 45;
+
+                        if (Math.abs(angleDeg - nearestAngle) > tolerance) {
+                            nearestAngle = (int) Math.round(angleDeg / 45) * 45;//zaokrouhlení na nejblížší úhel
                         }
 
                         // Převod zarovnaného úhlu zpět na radiány
                         double radians = Math.toRadians(nearestAngle);
 
                         // Výpočet nového koncového bodu na základě zarovnaného úhlu
+
+                        //určuje jak daleko se posuneme v horizontálním směru od startpoint na základě úhlu
                         int newX = (int) Math.round(startPoint.getX() + distance * Math.cos(radians));
+                        //určuje jak daleko se posuneme v vertikálním směru od startpoint na základě úhlu
                         int newY = (int) Math.round(startPoint.getY() + distance * Math.sin(radians));
                         currentEndPoint = new Point(newX, newY);
 
@@ -196,26 +184,21 @@ public class Controller2D {
         panel.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_C) {
+                if (e.getKeyCode() == KeyEvent.VK_C) {//Klávesa pro mazání
                     panel.clear(Color.BLACK.getRGB());
                     polygon.clearPoints();
                     lines.clear();
                     panel.repaint();
-                    System.out.println("Smazáno");
-                } else if (e.getKeyCode() == KeyEvent.VK_P) {
+                } else if (e.getKeyCode() == KeyEvent.VK_P) {//klávesa pro kreslení polygonu
                     drawingPolygon = true;
-                    System.out.println("Přepnuto na kreslení polygonu");
-                } else if (e.getKeyCode() == KeyEvent.VK_L) {
+                } else if (e.getKeyCode() == KeyEvent.VK_L) {//klávesa pro kreslení čáry
                     drawingPolygon = false;
-                    System.out.println("Přepnuto na kreslení čáry");
-                } else if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+                } else if (e.getKeyCode() == KeyEvent.VK_SHIFT) {//Pro kreslení čáry se zarovnáním
                     alignmentMode = !alignmentMode; // Přepni režim zarovnání
                     if (alignmentMode) {
-                        System.out.println("Režim zarovnání aktivován");
                         isShiftPressed = true;
                         panel.updateStav(isShiftPressed);
                     } else {
-                        System.out.println("Režim zarovnání deaktivován");
                         isShiftPressed = false;
                         panel.updateStav(isShiftPressed);
                     }
@@ -234,10 +217,10 @@ public class Controller2D {
             polygonRasterizer.rasterize(polygon);
         }
 
-        // Pokud kreslíme polygon a máme 2 body, čára mezi body bude viditelna
+        // Pokud kreslíme polygon a máme 2 body, čára mezi body bude viditelná
         if (drawingPolygon && polygon.getSize() == 2) {
             lineRasterizer.setColor(Color.GREEN.getRGB());
-            lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1),thickness));
+            lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1), thickness));
         }
 
         // Znovu vykresli všechny existující čáry
