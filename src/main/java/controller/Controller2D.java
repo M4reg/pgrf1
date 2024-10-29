@@ -3,6 +3,7 @@ package controller;
 import model.Line;
 import model.Point;
 import model.Polygon;
+import model.filler.SeedFill;
 import rasterizer.*;
 import view.Panel;
 import java.awt.*;
@@ -44,7 +45,17 @@ public class Controller2D {
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+
                 if (drawingPolygon) {
+                    if(e.getButton() == MouseEvent.BUTTON3) {
+                        SeedFill seedFill = new SeedFill(
+                                panel.getRasterBufferedImage(),
+                                e.getX(),
+                                e.getY(),
+                                Color.BLACK.getRGB(),
+                                0xFF0000);
+                        seedFill.fill();
+                    }
                     if (polygon.getSize() == 0) {
                         // První bod polygonu
                         polygon.addPoint(new Point(e.getX(), e.getY()));

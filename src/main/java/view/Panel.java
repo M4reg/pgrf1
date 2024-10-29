@@ -9,7 +9,7 @@ public class Panel extends JPanel {
     String stav = "off";
     private RasterBufferedImage rasterBufferedImage;
 
-    private static final int WIDTH = 800, HEIGHT = 600;
+    private static int WIDTH = 800, HEIGHT = 600;
 
     public Panel() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -20,6 +20,14 @@ public class Panel extends JPanel {
         rasterBufferedImage = new RasterBufferedImage(WIDTH, HEIGHT);
         rasterBufferedImage.setClearColor(Color.BLACK.getRGB());
 
+    }
+
+    public static int getWIDTH() {
+        return WIDTH;
+    }
+
+    public static int getHEIGHT() {
+        return HEIGHT;
     }
 
     @Override
