@@ -23,11 +23,14 @@ public class SeedFill implements Filler{
     }
 
     private void seedFill(int x, int y){
+
+        System.out.println("vypis souradnic bodu" + " "+x+ " "+ " " + y);
+        //TO DO: doplnit podminku o hranice obrazovky
+        if ((x < 0) || (y < 0) || (x >= Panel.getWIDTH()) && (y >= Panel.getHEIGHT())) {
+            return;
+        }
         //x,y sourazdnice pixelu kam uzivatel kliknul
         int pixelColor = raster.getPixel(x, y);
-
-        //TO DO: doplnit podminku o hranice obrazovky
-        if ((x >= 0) && (y >= 0) && (x < Panel.getWIDTH()) && (y < Panel.getHEIGHT())){
 
             //podminka pro ukonceni rekurze
             if(pixelColor != backgroundColor) {
@@ -40,6 +43,7 @@ public class SeedFill implements Filler{
             seedFill(x-1,y);
             seedFill(x,y+1);
             seedFill(x,y-1);
-        }
+
+
     }
 }

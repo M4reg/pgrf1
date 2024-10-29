@@ -54,6 +54,7 @@ public class Controller2D {
                                 e.getY(),
                                 Color.BLACK.getRGB(),
                                 0xFF0000);
+                        redraw();
                         seedFill.fill();
                     }
                     if (polygon.getSize() == 0) {
