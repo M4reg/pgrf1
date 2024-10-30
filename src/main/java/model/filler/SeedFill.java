@@ -1,7 +1,10 @@
 package model.filler;
 
+import model.Point;
 import rasterizer.Raster;
 import view.Panel;
+
+import java.util.Stack;
 
 public class SeedFill implements Filler{
 
@@ -9,11 +12,11 @@ public class SeedFill implements Filler{
     private int x,y;
     private int backgroundColor, fillColor;
 
-    public SeedFill(Raster raster, int x, int y, int backgroundColor, int fillColor) {
+    public SeedFill(Raster raster, int x, int y, int fillColor) {
         this.raster = raster;
         this.x = x;
         this.y = y;
-        this.backgroundColor = backgroundColor;
+        this.backgroundColor = raster.getPixel(x,y);
         this.fillColor = fillColor;
     }
 
@@ -24,9 +27,8 @@ public class SeedFill implements Filler{
 
     private void seedFill(int x, int y){
 
-        System.out.println("vypis souradnic bodu" + " "+x+ " "+ " " + y);
         //TO DO: doplnit podminku o hranice obrazovky
-        if ((x < 0) || (y < 0) || (x >= Panel.getWIDTH()) && (y >= Panel.getHEIGHT())) {
+        if ((x <= 0) || (y <= 0) || (x >= raster.getWidth()) || (y >= raster.getHeight())) {
             return;
         }
         //x,y sourazdnice pixelu kam uzivatel kliknul
@@ -43,7 +45,5 @@ public class SeedFill implements Filler{
             seedFill(x-1,y);
             seedFill(x,y+1);
             seedFill(x,y-1);
-
-
     }
 }
