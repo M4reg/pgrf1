@@ -6,8 +6,6 @@ import model.Polygon;
 import model.filler.SeedFill;
 import rasterizer.*;
 import view.Panel;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -49,13 +47,21 @@ public class Controller2D {
             public void mousePressed(MouseEvent e) {
 
                 if (drawingPolygon && e.getButton() == MouseEvent.BUTTON3) {
+                    int clickedColor = panel.getRasterBufferedImage().getPixel(e.getX(),e.getY());
+
+                    //pokud klikneme na hranici objektu nevyplňuj
+                    if (clickedColor == Color.RED.getRGB()){
+                        return;
+                    }
+
                     SeedFill seedFill = new SeedFill(
                             panel.getRasterBufferedImage(),
                             e.getX(),
                             e.getY(),
-                            Color.YELLOW.getRGB());
+                            Color.CYAN.getRGB());
                     redraw();
                     seedFill.fill();
+                    panel.repaint();
                 }
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     if (drawingPolygon) {
@@ -92,7 +98,7 @@ public class Controller2D {
 
                         // Pro druhý bod (polygon má teď 2 body) je třeba vykreslit čáru
                         if (polygon.getSize() == 2) {
-                            lineRasterizer.setColor(Color.GREEN.getRGB());
+                            lineRasterizer.setColor(Color.RED.getRGB());
                             lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1), thickness));
                         }
 
@@ -131,7 +137,7 @@ public class Controller2D {
                         redraw();
 
                         // Pružná čára k prvnímu bodu
-                        lineRasterizer.setColor(Color.GREEN.getRGB());
+                        lineRasterizer.setColor(Color.RED.getRGB());
                         lineRasterizer.rasterize(new Line(polygon.getPoint(0), currentEndPoint, 1));
 
                     } else if (drawingPolygon && startPoint != null && polygon.getSize() >= 2) {
@@ -141,7 +147,7 @@ public class Controller2D {
                         redraw();
 
                         // Pružná čára k prvnímu bodu
-                        lineRasterizer.setColor(Color.GREEN.getRGB());
+                        lineRasterizer.setColor(Color.RED.getRGB());
                         lineRasterizer.rasterize(new Line(polygon.getPoint(0), currentEndPoint, 1));
                         // Pružná čára k poslednímu bodu
                         lineRasterizer.rasterize(new Line(polygon.getPoint(polygon.getSize() - 1), currentEndPoint, 1));
@@ -191,7 +197,7 @@ public class Controller2D {
                         redraw();
 
                         // Vykreslení náhledu čáry
-                        lineRasterizer.setColor(Color.GREEN.getRGB());
+                        lineRasterizer.setColor(Color.RED.getRGB());
                         lineRasterizer.rasterize(new Line(startPoint, currentEndPoint, 1));
                     }
                     panel.repaint();
@@ -237,7 +243,7 @@ public class Controller2D {
 
         // Pokud kreslíme polygon a máme 2 body, čára mezi body bude viditelná
         if (drawingPolygon && polygon.getSize() == 2) {
-            lineRasterizer.setColor(Color.GREEN.getRGB());
+            lineRasterizer.setColor(Color.RED.getRGB());
             lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1), thickness));
         }
 
@@ -245,6 +251,5 @@ public class Controller2D {
         for (Line line : lines) {
             lineRasterizer.rasterize(line);
         }
-
     }
 }
