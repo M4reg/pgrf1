@@ -3,6 +3,7 @@ package controller;
 import model.Line;
 import model.Point;
 import model.Polygon;
+import model.filler.ScanLIne;
 import model.filler.SeedFill;
 import rasterizer.*;
 import view.Panel;
@@ -102,6 +103,11 @@ public class Controller2D {
                             lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1), thickness));
                         }
 
+                        if (polygon.getSize() >= 3) {
+                            ScanLIne scanLineFiller = new ScanLIne(lineRasterizer, polygon, polygonRasterizer);
+                            scanLineFiller.fill();
+                            panel.repaint();
+                        }
                         startPoint = null;
                         currentEndPoint = null;
 
