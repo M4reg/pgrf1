@@ -56,7 +56,7 @@ public class ScanLIne implements Filler {
             }
         }
 
-        for (int y = yMin; y < yMax; y++) {
+        for (int y = yMin; y <= yMax; y++) {
             List<Integer> intersections = new ArrayList<>();
 
             for (Edge edge : edges) {
@@ -66,10 +66,9 @@ public class ScanLIne implements Filler {
                 }
             }
 
-
             intersections.sort(Integer::compareTo);
 
-            for (int i = 0; i < intersections.size() - 1; i ++) {
+            for (int i = 0; i < intersections.size() - 1; i +=2) {
                 int xStart = intersections.get(i);
                 int xEnd = intersections.get(i+1);
                 Line line = new Line(xStart, y, xEnd, y, 1);

@@ -43,7 +43,7 @@ public class SeedFill implements Filler {
             int pixelColor = raster.getPixel(x, y);
 
             //podminka pro ukonceni
-            if (pixelColor != backgroundColor) {
+            if (pixelColor == fillColor || pixelColor != backgroundColor) {
                 continue;
             }
 

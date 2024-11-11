@@ -22,14 +22,6 @@ public class Panel extends JPanel {
 
     }
 
-    public static int getWIDTH() {
-        return WIDTH;
-    }
-
-    public static int getHEIGHT() {
-        return HEIGHT;
-    }
-
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

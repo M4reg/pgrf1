@@ -29,6 +29,7 @@ public class Controller2D {
     private final double tolerance = 22.5;
     private boolean isShiftPressed = false; //Pro sledování režimu zarovnávání
 
+
     public Controller2D(Panel panel) {
         this.panel = panel;
         initObjects(panel.getRasterBufferedImage());
@@ -47,7 +48,7 @@ public class Controller2D {
             @Override
             public void mousePressed(MouseEvent e) {
 
-                if (drawingPolygon && e.getButton() == MouseEvent.BUTTON3) {
+                if (!drawingPolygon && e.getButton() == MouseEvent.BUTTON3) {
                     int clickedColor = panel.getRasterBufferedImage().getPixel(e.getX(),e.getY());
 
                     //pokud klikneme na hranici objektu nevyplňuj
@@ -105,6 +106,7 @@ public class Controller2D {
 
                         if (polygon.getSize() >= 3) {
                             ScanLIne scanLineFiller = new ScanLIne(lineRasterizer, polygon, polygonRasterizer);
+                            redraw();
                             scanLineFiller.fill();
                             panel.repaint();
                         }
@@ -143,7 +145,7 @@ public class Controller2D {
                         redraw();
 
                         // Pružná čára k prvnímu bodu
-                        lineRasterizer.setColor(Color.RED.getRGB());
+                        lineRasterizer.setColor(Color.red.getRGB());
                         lineRasterizer.rasterize(new Line(polygon.getPoint(0), currentEndPoint, 1));
 
                     } else if (drawingPolygon && startPoint != null && polygon.getSize() >= 2) {
@@ -249,13 +251,18 @@ public class Controller2D {
 
         // Pokud kreslíme polygon a máme 2 body, čára mezi body bude viditelná
         if (drawingPolygon && polygon.getSize() == 2) {
-            lineRasterizer.setColor(Color.RED.getRGB());
             lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1), thickness));
+        }
+
+        if (polygon.getSize() >=3){
+            ScanLIne scanLineFiller = new ScanLIne(lineRasterizer, polygon, polygonRasterizer);
+            scanLineFiller.fill();
         }
 
         // Znovu vykresli všechny existující čáry
         for (Line line : lines) {
             lineRasterizer.rasterize(line);
         }
+
     }
 }

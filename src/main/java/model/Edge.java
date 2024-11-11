@@ -29,16 +29,18 @@ public class Edge {
 
     //Vypocita a vrati x ovou souradnici prusecik scanline
     public int getIntersection(int y){
-        if (isHorizontal()){
-            return p1.getX();
-        }
         // Získání souřadnic bodů
         int x1 = p1.getX();
         int y1 = p1.getY();
         int x2 = p2.getX();
         int y2 = p2.getY();
 
-        double k = (double)(x2 - x1) / (y2 - y1);
-        return (int) (x1 + k * (y - y1));
+        if (x1 == x2)
+        {
+            return x1;
+        }
+
+        double k = (double) (y2 - y1) / (x2 - x1);
+        return (int) (x1 + (y - y1) / k);
     }
 }
