@@ -7,6 +7,7 @@ import model.Polygon;
 import rasterizer.LineRasterizer;
 import rasterizer.PolygonRasterizer;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,11 +16,13 @@ public class ScanLIne implements Filler {
     private LineRasterizer rasterizer;
     private Polygon polygon;
     private PolygonRasterizer polygonRasterizer;
+    private int fiilColor;
 
-    public ScanLIne(LineRasterizer rasterizer, Polygon polygon, PolygonRasterizer polygonRasterizer) {
+    public ScanLIne(LineRasterizer rasterizer, Polygon polygon, PolygonRasterizer polygonRasterizer, int fillColor) {
         this.rasterizer = rasterizer;
         this.polygon = polygon;
         this.polygonRasterizer = polygonRasterizer;
+        this.fiilColor = fillColor;
     }
 
     @Override
@@ -55,6 +58,7 @@ public class ScanLIne implements Filler {
                 yMax = y;
             }
         }
+        rasterizer.setColor(Color.CYAN.getRGB());
 
         for (int y = yMin; y <= yMax; y++) {
             List<Integer> intersections = new ArrayList<>();
@@ -75,6 +79,7 @@ public class ScanLIne implements Filler {
                 rasterizer.rasterize(line);
             }
         }
+        rasterizer.setColor(Color.RED.getRGB());
         polygonRasterizer.rasterize(polygon);
     }
 }

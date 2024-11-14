@@ -105,7 +105,7 @@ public class Controller2D {
                         }
 
                         if (polygon.getSize() >= 3) {
-                            ScanLIne scanLineFiller = new ScanLIne(lineRasterizer, polygon, polygonRasterizer);
+                            ScanLIne scanLineFiller = new ScanLIne(lineRasterizer, polygon, polygonRasterizer, Color.CYAN.getRGB());
                             redraw();
                             scanLineFiller.fill();
                             panel.repaint();
@@ -255,7 +255,7 @@ public class Controller2D {
         }
 
         if (polygon.getSize() >=3){
-            ScanLIne scanLineFiller = new ScanLIne(lineRasterizer, polygon, polygonRasterizer);
+            ScanLIne scanLineFiller = new ScanLIne(lineRasterizer, polygon, polygonRasterizer, Color.CYAN.getRGB());
             scanLineFiller.fill();
         }
 

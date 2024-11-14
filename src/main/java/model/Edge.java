@@ -22,6 +22,14 @@ public class Edge {
         }
     }
 
+    public Point getP1() {
+        return p1;
+    }
+
+    public Point getP2() {
+        return p2;
+    }
+
     //Zjistit zda existuje prusecik scanLine s hrano
     public boolean intersectionExist(int y){
         return y >= p1.getY() && y < p2.getY();
