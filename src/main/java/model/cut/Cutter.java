@@ -18,7 +18,10 @@ public class Cutter {
         List<Point> cutResult = new ArrayList<>(pointsToCut);
 
         //iteruji přes všechny hrany v seznamu bodů ořezávaného polygonu
-        for (int i = 0; i < pointsToCut.size(); i++) {
+        for (int i = 0; i < cuttingPoints.size(); i++) {
+            if (cutResult.isEmpty()){
+                break;
+            }
 
             //definuji hranu orezevaci polygonu
             Point cP1 = cuttingPoints.get(i);
@@ -53,11 +56,11 @@ public class Cutter {
     }
 
     private boolean isInside(Point point, Edge edge) {
-        int a = edge.getP2().getX() - edge.getP1().getY();
-        int b = edge.getP1().getX() - edge.getP2().getY();
-        int c = edge.getP2().getX() - edge.getP1().getX() - edge.getP1().getX() * edge.getP1().getY();
+        int a = edge.getP2().getY() - edge.getP1().getY();
+        int b = edge.getP1().getX() - edge.getP2().getX();
+        int c = a * edge.getP1().getX() + b * edge.getP1().getY();
 
-        int num = a * point.getX() + b * point.getY() + c;
+        int num = a * point.getX() + b * point.getY() - c;
 
         return num >= 0;
     }

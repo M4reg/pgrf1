@@ -30,8 +30,8 @@ public class Panel extends JPanel {
         //nápověda
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.PLAIN, 14));
-        String help = "Pro smazání stiskni [C]  Pro kreslení přímky [L]  Pro kreslení polygonu [P]  Pro režim zarovnávání čáry[Shift]:" + stav;
-        String modifiedhelp = help.replace("  ", "  " + " ".repeat(7));
+        String help = "Pro smazání stiskni [C]  Přímka [L]  Polygon [P]  Pentagon [O]  Režim zarovnávání čáry[Shift]:" + stav;
+        String modifiedhelp = help.replace("  ", "  " + " ".repeat(10));
         g.drawString(modifiedhelp, 10, getHeight() - 10);
     }
 

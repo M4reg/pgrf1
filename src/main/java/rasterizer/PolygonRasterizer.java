@@ -23,7 +23,6 @@ public class PolygonRasterizer {
             return;
         } else {
 
-            lineRasterizer.setColor(Color.RED.getRGB());
             //cyklus pro vykreslení všechy stran polygonu
             for (int i = 0; i < polygon.getSize(); i++) {
                 int indexA = i; // aktuální bod
@@ -48,6 +47,13 @@ public class PolygonRasterizer {
 
     public void setThickness(int thickness) {
         this.thickness = thickness;
+    }
+    public void setColor(int color) {
+        lineRasterizer.setColor(color); // Nastaví barvu na lineRasterizer
+    }
+
+    public LineRasterizer getLineRasterizer() {
+        return this.lineRasterizer;
     }
 
 }

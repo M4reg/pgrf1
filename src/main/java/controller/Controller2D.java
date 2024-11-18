@@ -1,8 +1,9 @@
 package controller;
 
-import model.Line;
+import model.*;
 import model.Point;
 import model.Polygon;
+import model.cut.Cutter;
 import model.filler.ScanLIne;
 import model.filler.SeedFill;
 import rasterizer.*;
@@ -28,17 +29,26 @@ public class Controller2D {
     private final int thickness = 5;
     private final double tolerance = 22.5;
     private boolean isShiftPressed = false; //Pro sledování režimu zarovnávání
+    private CuttingPolygon cuttingPolygon;
+    private boolean isDrawingPentagonActive = false;
+    private Point center;
+    private java.util.List<Pentagon> pentagons = new ArrayList<>();
+    private boolean drawingLine = false;
+    private Pentagon pentagon;
+    private java.util.List<SeedFill> seedFills = new ArrayList<>();
 
 
     public Controller2D(Panel panel) {
         this.panel = panel;
         initObjects(panel.getRasterBufferedImage());
         initListeners(panel);
+        redraw();
     }
 
     public void initObjects(RasterBufferedImage raster) {
         lineRasterizer = new LineRasterizerGraphics(raster);
         polygon = new Polygon();
+        cuttingPolygon = new CuttingPolygon();
         polygonRasterizer = new PolygonRasterizer(lineRasterizer, thickness);
         lines = new ArrayList<>();
     }
@@ -48,6 +58,10 @@ public class Controller2D {
             @Override
             public void mousePressed(MouseEvent e) {
 
+                if (e.getButton() == MouseEvent.BUTTON1 && isDrawingPentagonActive){
+                    center = new Point(e.getX(), e.getY());
+                    pentagon = null;
+                }
                 if (!drawingPolygon && e.getButton() == MouseEvent.BUTTON3) {
                     int clickedColor = panel.getRasterBufferedImage().getPixel(e.getX(),e.getY());
 
@@ -61,8 +75,9 @@ public class Controller2D {
                             e.getX(),
                             e.getY(),
                             Color.CYAN.getRGB());
-                    redraw();
+                    seedFills.add(seedFill);
                     seedFill.fill();
+                    redraw();
                     panel.repaint();
                 }
                 if (e.getButton() == MouseEvent.BUTTON1) {
@@ -78,9 +93,11 @@ public class Controller2D {
                             startPoint = new Point(e.getX(), e.getY());
                             currentEndPoint = startPoint;
                         }
+                        lineRasterizer.setColor(Color.RED.getRGB());
                         redraw();
-                    } else {
+                    } else if(drawingLine){
                         // Pokud nekreslíme polygon, můžeme kreslit čáru
+                        lineRasterizer.setColor(Color.GREEN.getRGB());
                         startPoint = new Point(e.getX(), e.getY());
                         currentEndPoint = startPoint;
 
@@ -91,6 +108,16 @@ public class Controller2D {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) {
+                    if (isDrawingPentagonActive){
+                        int radius = (int) Math.sqrt(Math.pow(e.getX() - center.getX(), 2) + Math.pow(e.getY() - center.getY(), 2));
+                        double angle = Math.atan2(e.getY() - center.getY(), e.getX() - center.getX());
+                        pentagon = new Pentagon(center.getX(), center.getY(), radius);
+                        pentagon.setRotationAngle(angle);
+                        pentagons.add(pentagon);
+                        redraw();
+                        panel.repaint();
+                    }
+
                     if (drawingPolygon && startPoint != null) {
                         // Po uvolnění tlačítka přidáme bod do polygonu
                         polygon.addPoint(new Point(e.getX(), e.getY()));
@@ -105,6 +132,7 @@ public class Controller2D {
                         }
 
                         if (polygon.getSize() >= 3) {
+
                             ScanLIne scanLineFiller = new ScanLIne(lineRasterizer, polygon, polygonRasterizer, Color.CYAN.getRGB());
                             redraw();
                             scanLineFiller.fill();
@@ -132,12 +160,33 @@ public class Controller2D {
                     redraw(); // Aktualizace plátna
                     panel.repaint();
                 }
+
             }
         });
 
         panel.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
+                // Zpracovávej pouze tažení levým tlačítkem
+                if ((e.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) == 0) {
+                    return;
+                }
+                    if (isDrawingPentagonActive && center != null) {
+                        // Dynamické vykreslování pentagonu během tažení myši
+                        int radius = (int) Math.sqrt(Math.pow(e.getX() - center.getX(), 2) + Math.pow(e.getY() - center.getY(), 2));
+                        double angle = Math.atan2(e.getY() - center.getY(), e.getX() - center.getX());
+
+                        if (pentagon == null) {
+                            pentagon = new Pentagon(center.getX(), center.getY(), radius);
+                        } else {
+                            pentagon.setRadius(radius);
+                            pentagon.setRotationAngle(angle);
+                        }
+                        panel.clear(Color.BLACK.getRGB());
+                        redraw();
+                        pentagon.draw(polygonRasterizer);
+                        panel.repaint();
+                    }
                     if (drawingPolygon && polygon.getSize() == 1 && startPoint != null) {
                         // Pružná čára od prvního bodu polygonu
                         currentEndPoint = new Point(e.getX(), e.getY());
@@ -211,6 +260,7 @@ public class Controller2D {
                     panel.repaint();
                 }
 
+
         });
 
         panel.addKeyListener(new KeyAdapter() {
@@ -219,11 +269,24 @@ public class Controller2D {
                 if (e.getKeyCode() == KeyEvent.VK_C) {//Klávesa pro mazání
                     panel.clear(Color.BLACK.getRGB());
                     polygon.clearPoints();
+                    if (pentagon != null) {
+                        pentagon.clearPoints(); // Vymazání bodů pentagonu, pokud existuje
+                    }
+                    seedFills.clear();
+                    pentagons.clear();
                     lines.clear();
                     panel.repaint();
                 } else if (e.getKeyCode() == KeyEvent.VK_P) {//klávesa pro kreslení polygonu
                     drawingPolygon = true;
+                    drawingLine = false;
+                    isDrawingPentagonActive = false;
+                }else if (e.getKeyCode() == KeyEvent.VK_O) {//klávesa pro kreslení polygonu
+                    drawingPolygon = false;
+                    drawingLine = false;
+                    isDrawingPentagonActive = true;
                 } else if (e.getKeyCode() == KeyEvent.VK_L) {//klávesa pro kreslení čáry
+                    isDrawingPentagonActive = false;
+                    drawingLine = true;
                     drawingPolygon = false;
                 } else if (e.getKeyCode() == KeyEvent.VK_SHIFT) {//Pro kreslení čáry se zarovnáním
                     alignmentMode = !alignmentMode; // Přepni režim zarovnání
@@ -241,8 +304,10 @@ public class Controller2D {
         });
     }
 
+
     private void redraw() {
         panel.clear(Color.BLACK.getRGB()); // Vyčistit panel
+        cuttingPolygon.drawCuttingPolygon(polygonRasterizer);
 
         // Znovu vykreslit polygon, pokud má nějaké body
         if (polygon.getSize() > 0) {
@@ -251,6 +316,7 @@ public class Controller2D {
 
         // Pokud kreslíme polygon a máme 2 body, čára mezi body bude viditelná
         if (drawingPolygon && polygon.getSize() == 2) {
+            lineRasterizer.setColor(Color.RED.getRGB());
             lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1), thickness));
         }
 
@@ -261,8 +327,17 @@ public class Controller2D {
 
         // Znovu vykresli všechny existující čáry
         for (Line line : lines) {
+            lineRasterizer.setColor(Color.RED.getRGB());
             lineRasterizer.rasterize(line);
         }
 
+
+        for (Pentagon pentagon : pentagons) {
+                pentagon.draw(polygonRasterizer);
+        }
+
+        for (SeedFill fill : seedFills) {
+            fill.fill();
+        }
     }
 }
