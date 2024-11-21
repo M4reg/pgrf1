@@ -1,5 +1,6 @@
 package rasterizer;
 
+import model.CuttingPolygon;
 import model.Line;
 import model.Point;
 import model.Polygon;
@@ -23,6 +24,12 @@ public class PolygonRasterizer {
             return;
         } else {
 
+            Color color = Color.RED;
+            if (polygon instanceof CuttingPolygon){
+                color = ((CuttingPolygon) polygon).getColor();
+            }
+
+            lineRasterizer.setColor(color.getRGB());
             //cyklus pro vykreslení všechy stran polygonu
             for (int i = 0; i < polygon.getSize(); i++) {
                 int indexA = i; // aktuální bod

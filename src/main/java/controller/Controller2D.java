@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Controller2D {
 
@@ -36,6 +37,10 @@ public class Controller2D {
     private boolean drawingLine = false;
     private Pentagon pentagon;
     private java.util.List<SeedFill> seedFills = new ArrayList<>();
+    private boolean drawingCuttingPolygon = false;
+    private Cutter cutter = new Cutter();
+    private Polygon cutPolygon = new Polygon();
+
 
 
     public Controller2D(Panel panel) {
@@ -82,6 +87,7 @@ public class Controller2D {
                 }
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     if (drawingPolygon) {
+                        lineRasterizer.setColor(Color.RED.getRGB());
                         if (polygon.getSize() == 0) {
                             // První bod polygonu
                             polygon.addPoint(new Point(e.getX(), e.getY()));
@@ -93,11 +99,26 @@ public class Controller2D {
                             startPoint = new Point(e.getX(), e.getY());
                             currentEndPoint = startPoint;
                         }
-                        lineRasterizer.setColor(Color.RED.getRGB());
                         redraw();
-                    } else if(drawingLine){
+                    }
+                    if (drawingCuttingPolygon) {
+                        lineRasterizer.setColor(Color.YELLOW.getRGB());
+                        if (cuttingPolygon.getSize() == 0) {
+                            // První bod polygonu
+                            cuttingPolygon.addPoint(new Point(e.getX(), e.getY()));
+                            startPoint = new Point(e.getX(), e.getY()); // uložíme počáteční bod pro pružnou čáru
+                            currentEndPoint = startPoint; //nastavení aktuálního koncového bodu
+
+                        } else if (cuttingPolygon.getSize() >= 1) {
+                            // Po přidání druhého bodu již kreslíme pružné čáry
+                            startPoint = new Point(e.getX(), e.getY());
+                            currentEndPoint = startPoint;
+                        }
+
+                        redraw();
+                    }
+                    if(drawingLine){
                         // Pokud nekreslíme polygon, můžeme kreslit čáru
-                        lineRasterizer.setColor(Color.GREEN.getRGB());
                         startPoint = new Point(e.getX(), e.getY());
                         currentEndPoint = startPoint;
 
@@ -117,7 +138,6 @@ public class Controller2D {
                         redraw();
                         panel.repaint();
                     }
-
                     if (drawingPolygon && startPoint != null) {
                         // Po uvolnění tlačítka přidáme bod do polygonu
                         polygon.addPoint(new Point(e.getX(), e.getY()));
@@ -130,18 +150,24 @@ public class Controller2D {
                             lineRasterizer.setColor(Color.RED.getRGB());
                             lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1), thickness));
                         }
+                        startPoint = null;
+                        currentEndPoint = null;
 
-                        if (polygon.getSize() >= 3) {
+                    } else if (drawingCuttingPolygon && startPoint != null) {
+                        // Po uvolnění tlačítka přidáme bod do polygonu
+                        cuttingPolygon.addPoint(new Point(e.getX(), e.getY()));
+                        // Nastavení koncového bodu
+                        currentEndPoint = new Point(e.getX(), e.getY());
 
-                            ScanLIne scanLineFiller = new ScanLIne(lineRasterizer, polygon, polygonRasterizer, Color.CYAN.getRGB());
-                            redraw();
-                            scanLineFiller.fill();
-                            panel.repaint();
+                        // Pro druhý bod (polygon má teď 2 body) je třeba vykreslit čáru
+                        if (cuttingPolygon.getSize() == 2) {
+                            lineRasterizer.setColor(Color.yellow.getRGB());
+                            lineRasterizer.rasterize(new Line(cuttingPolygon.getPoint(0), cuttingPolygon.getPoint(1), thickness));
                         }
                         startPoint = null;
                         currentEndPoint = null;
 
-                    } else if (!drawingPolygon && startPoint != null) {
+                    }else if (!drawingCuttingPolygon && !drawingPolygon && startPoint != null) {
                         // Pokud kreslíme úsečku
                         if (isShiftPressed) {
                             // Použijeme zarovnaný koncový bod
@@ -186,6 +212,27 @@ public class Controller2D {
                         redraw();
                         pentagon.draw(polygonRasterizer);
                         panel.repaint();
+                    }if (drawingCuttingPolygon && cuttingPolygon.getSize() == 1 && startPoint != null) {
+                    // Pružná čára od prvního bodu polygonu
+                    currentEndPoint = new Point(e.getX(), e.getY());
+                    panel.clear(Color.BLACK.getRGB());
+                    redraw();
+
+                    // Pružná čára k prvnímu bodu
+                    lineRasterizer.setColor(Color.yellow.getRGB());
+                    lineRasterizer.rasterize(new Line(cuttingPolygon.getPoint(0), currentEndPoint, 1));
+
+                    } else if (drawingCuttingPolygon && startPoint != null && cuttingPolygon.getSize() >= 2) {
+                        // Pružná čára od posledního a prvního bodu polygonu
+                        currentEndPoint = new Point(e.getX(), e.getY());
+                        panel.clear(Color.BLACK.getRGB());
+                        redraw();
+
+                        // Pružná čára k prvnímu bodu
+                        lineRasterizer.setColor(Color.yellow.getRGB());
+                        lineRasterizer.rasterize(new Line(cuttingPolygon.getPoint(0), currentEndPoint, 1));
+                        // Pružná čára k poslednímu bodu
+                        lineRasterizer.rasterize(new Line(cuttingPolygon.getPoint(cuttingPolygon.getSize() - 1), currentEndPoint, 1));
                     }
                     if (drawingPolygon && polygon.getSize() == 1 && startPoint != null) {
                         // Pružná čára od prvního bodu polygonu
@@ -209,7 +256,7 @@ public class Controller2D {
                         // Pružná čára k poslednímu bodu
                         lineRasterizer.rasterize(new Line(polygon.getPoint(polygon.getSize() - 1), currentEndPoint, 1));
 
-                    } else if (!drawingPolygon && startPoint != null) {
+                    } else if (!drawingCuttingPolygon && !drawingPolygon && startPoint != null) {
 
                         // Pokud je Shift stisknutý, najdeme nejbližší polohu čáry
                         if (isShiftPressed) {
@@ -274,21 +321,54 @@ public class Controller2D {
                     }
                     seedFills.clear();
                     pentagons.clear();
+                    cuttingPolygon.clearPoints();
+                    cutPolygon.clearPoints();
                     lines.clear();
                     panel.repaint();
                 } else if (e.getKeyCode() == KeyEvent.VK_P) {//klávesa pro kreslení polygonu
                     drawingPolygon = true;
                     drawingLine = false;
                     isDrawingPentagonActive = false;
-                }else if (e.getKeyCode() == KeyEvent.VK_O) {//klávesa pro kreslení polygonu
+                    drawingCuttingPolygon =false;
+                } else if (e.getKeyCode() == KeyEvent.VK_S) {//klávesa pro kreslení řezacího polygonu
+                    drawingPolygon = false;
+                    drawingLine = false;
+                    isDrawingPentagonActive = false;
+                    drawingCuttingPolygon =true;
+                }else if (e.getKeyCode() == KeyEvent.VK_O) {//klávesa pro kreslení pentagonu
                     drawingPolygon = false;
                     drawingLine = false;
                     isDrawingPentagonActive = true;
+                    drawingCuttingPolygon =false;
                 } else if (e.getKeyCode() == KeyEvent.VK_L) {//klávesa pro kreslení čáry
                     isDrawingPentagonActive = false;
                     drawingLine = true;
                     drawingPolygon = false;
-                } else if (e.getKeyCode() == KeyEvent.VK_SHIFT) {//Pro kreslení čáry se zarovnáním
+                    drawingCuttingPolygon =false;
+                } else if (e.getKeyCode() == KeyEvent.VK_F) {//klávesa pro ořezání polygonu polygonem
+                    if (polygon.getSize() >= 3 && cuttingPolygon.getSize() >= 3){
+                        List<Point> cutResult = cutter.cut(cuttingPolygon.getPoints(), polygon.getPoints());
+
+                        for (Point p : cutResult){
+                            cutPolygon.addPoint(p);
+                        }
+
+                        if (cutPolygon.getSize() > 0){
+                            polygon.clearPoints();
+                            cuttingPolygon.clearPoints();
+
+                            lineRasterizer.setColor(Color.GREEN.getRGB());
+                            polygonRasterizer.rasterize(cutPolygon);
+
+                        }
+                        ScanLIne scanLineFiller = new ScanLIne(lineRasterizer,cutPolygon,polygonRasterizer, Color.CYAN.getRGB());
+                        scanLineFiller.fill();
+
+                        redraw();
+                        panel.repaint();
+                    }
+
+                }  if (e.getKeyCode() == KeyEvent.VK_SHIFT) {//Pro kreslení čáry se zarovnáním
                     alignmentMode = !alignmentMode; // Přepni režim zarovnání
                     if (alignmentMode) {
                         isShiftPressed = true;
@@ -307,8 +387,19 @@ public class Controller2D {
 
     private void redraw() {
         panel.clear(Color.BLACK.getRGB()); // Vyčistit panel
-        cuttingPolygon.drawCuttingPolygon(polygonRasterizer);
 
+        if(cutPolygon.getSize()>0){
+            lineRasterizer.setColor(Color.GREEN.getRGB());
+            polygonRasterizer.rasterize(cutPolygon);
+        }
+        if (cutPolygon.getSize() >= 3){
+            ScanLIne scanLineFiller = new ScanLIne(lineRasterizer,cutPolygon,polygonRasterizer, Color.cyan.getRGB());
+            scanLineFiller.fill();
+        }
+
+        if (cuttingPolygon.getSize() > 0){
+           polygonRasterizer.rasterize(cuttingPolygon);
+        }
         // Znovu vykreslit polygon, pokud má nějaké body
         if (polygon.getSize() > 0) {
             polygonRasterizer.rasterize(polygon);
@@ -319,10 +410,9 @@ public class Controller2D {
             lineRasterizer.setColor(Color.RED.getRGB());
             lineRasterizer.rasterize(new Line(polygon.getPoint(0), polygon.getPoint(1), thickness));
         }
-
-        if (polygon.getSize() >=3){
-            ScanLIne scanLineFiller = new ScanLIne(lineRasterizer, polygon, polygonRasterizer, Color.CYAN.getRGB());
-            scanLineFiller.fill();
+        if (drawingCuttingPolygon && cuttingPolygon.getSize() == 2) {
+            lineRasterizer.setColor(Color.YELLOW.getRGB());
+            lineRasterizer.rasterize(new Line(cuttingPolygon.getPoint(0), cuttingPolygon.getPoint(1), thickness));
         }
 
         // Znovu vykresli všechny existující čáry
