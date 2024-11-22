@@ -67,14 +67,13 @@ public class Controller2D {
                     center = new Point(e.getX(), e.getY());
                     pentagon = null;
                 }
-                if (!drawingPolygon && e.getButton() == MouseEvent.BUTTON3) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
                     int clickedColor = panel.getRasterBufferedImage().getPixel(e.getX(),e.getY());
 
                     //pokud klikneme na hranici objektu nevyplňuj
                     if (clickedColor == Color.RED.getRGB()){
                         return;
                     }
-
                     SeedFill seedFill = new SeedFill(
                             panel.getRasterBufferedImage(),
                             e.getX(),
@@ -348,6 +347,7 @@ public class Controller2D {
                 } else if (e.getKeyCode() == KeyEvent.VK_F) {//klávesa pro ořezání polygonu polygonem
                     if (polygon.getSize() >= 3 && cuttingPolygon.getSize() >= 3){
                         List<Point> cutResult = cutter.cut(cuttingPolygon.getPoints(), polygon.getPoints());
+                        cutPolygon.clearPoints();
 
                         for (Point p : cutResult){
                             cutPolygon.addPoint(p);
@@ -356,13 +356,28 @@ public class Controller2D {
                         if (cutPolygon.getSize() > 0){
                             polygon.clearPoints();
                             cuttingPolygon.clearPoints();
-
-                            lineRasterizer.setColor(Color.GREEN.getRGB());
                             polygonRasterizer.rasterize(cutPolygon);
 
+                            ScanLIne scanLineFiller = new ScanLIne(lineRasterizer,cutPolygon,polygonRasterizer, Color.CYAN.getRGB());
+                            scanLineFiller.fill();
                         }
-                        ScanLIne scanLineFiller = new ScanLIne(lineRasterizer,cutPolygon,polygonRasterizer, Color.CYAN.getRGB());
-                        scanLineFiller.fill();
+
+                        redraw();
+                        panel.repaint();
+                    } else if (cutPolygon.getSize() >= 3 && cuttingPolygon.getSize() >= 3) {
+                        List<Point> cutResult = cutter.cut(cuttingPolygon.getPoints(), cutPolygon.getPoints());
+                        cutPolygon.clearPoints();
+
+                        for (Point p : cutResult){
+                            cutPolygon.addPoint(p);
+                        }
+
+                        if (cutPolygon.getSize() > 0){
+                            cuttingPolygon.clearPoints();
+                            polygonRasterizer.rasterize(cutPolygon);
+                            ScanLIne scanLineFiller = new ScanLIne(lineRasterizer,cutPolygon,polygonRasterizer, Color.CYAN.getRGB());
+                            scanLineFiller.fill();
+                        }
 
                         redraw();
                         panel.repaint();
