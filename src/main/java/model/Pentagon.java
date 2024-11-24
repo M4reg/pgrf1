@@ -4,7 +4,7 @@ import rasterizer.PolygonRasterizer;
 
 import java.awt.*;
 
-public class Pentagon extends Polygon{
+public class Pentagon extends Polygon {
     private int centerX, centerY, radius;
     private double rotationAngle = 0;
 
@@ -30,18 +30,25 @@ public class Pentagon extends Polygon{
         calculatePoints();
     }
 
-    private void calculatePoints(){
+    private void calculatePoints() {
         clearPoints();
 
-        double angleStep = Math.toRadians(72); // Úhel mezi vrcholy (360° / 5)
+        double angleStep = Math.toRadians(72); // Úhel mezi dvěma sousedními vrcholy (360° / 5)
+
+        //cyklus pro výpočet vrcholů
         for (int i = 0; i < 5; i++) {
-            double angle = rotationAngle+ i  * angleStep;
+            //výpočet aktuálního vrcholu s rotací
+            double angle = rotationAngle + i * angleStep;
+
+            //výpočet souřadnic vrcholů
             int x = (int) (centerX + radius * Math.cos(angle));
             int y = (int) (centerY + radius * Math.sin(angle));
+
             // Přidání bodu do seznamu bodů polygonu (děděno z třídy Polygon)
             addPoint(new Point(x, y));
         }
     }
+
     // Metoda pro vykreslení pentagonu pomocí PolygonRasterizeru
     public void draw(PolygonRasterizer rasterizer) {
         rasterizer.setColor(Color.RED.getRGB());

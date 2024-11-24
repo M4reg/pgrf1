@@ -1,7 +1,5 @@
 package model;
 
-import rasterizer.PolygonRasterizer;
-
 import java.awt.*;
 
 public class CuttingPolygon extends Polygon{

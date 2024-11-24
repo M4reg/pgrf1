@@ -8,13 +8,13 @@ public class Edge {
         this.p2 = p2;
     }
 
-    //vrat true pokud je cara vodorovna
+    //vrať true pokud je čára vodorovná
     public boolean isHorizontal() {
         return p1.getY() == p2.getY();
     }
 
     public void orientate(){
-        //prehodit podle y1 a y2 -> prohodit
+        //y1 a y2 -> prohodit
         if(p1.getY() > p2.getY()){
             Point tmp = p1;
             p1 = p2;
@@ -22,20 +22,12 @@ public class Edge {
         }
     }
 
-    public Point getP1() {
-        return p1;
-    }
-
-    public Point getP2() {
-        return p2;
-    }
-
-    //Zjistit zda existuje prusecik scanLine s hrano
+    //Zjistit zda existuje průsečik scanLine s hranou
     public boolean intersectionExist(int y){
         return y >= p1.getY() && y < p2.getY();
     }
 
-    //Vypocita a vrati x ovou souradnici prusecik scanline
+    //Vypočítá a vrátí x ovou souřadnici průsečík scanline
     public int getIntersection(int y){
         // Získání souřadnic bodů
         int x1 = p1.getX();
@@ -48,6 +40,7 @@ public class Edge {
             return x1;
         }
 
+        //výpočet k a x souřadnici mezi hranou a scanline
         double k = (double) (y2 - y1) / (x2 - x1);
         return (int) (x1 + (y - y1) / k);
     }

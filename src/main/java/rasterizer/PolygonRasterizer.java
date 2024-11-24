@@ -47,20 +47,7 @@ public class PolygonRasterizer {
         }
 
     }
-
-    public void setLineRasterizer(LineRasterizer lineRasterizer) {
-        this.lineRasterizer = lineRasterizer;
-    }
-
-    public void setThickness(int thickness) {
-        this.thickness = thickness;
-    }
     public void setColor(int color) {
         lineRasterizer.setColor(color); // Nastaví barvu na lineRasterizer
     }
-
-    public LineRasterizer getLineRasterizer() {
-        return this.lineRasterizer;
-    }
-
 }

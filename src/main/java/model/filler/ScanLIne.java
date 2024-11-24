@@ -32,7 +32,7 @@ public class ScanLIne implements Filler {
 
     private void scanLineFill() {
         List<Edge> edges = new ArrayList<>();
-        //projdu vsechny pointy polygonu a pro kazde 2 pointy vytvorim hranu
+        //projdu všechny pointy polygonu a pro každé 2 pointy vytvořím hranu
 
         for (int i = 0; i < polygon.getSize(); i++) {
             Point p1 = polygon.getPoint(i);
@@ -40,12 +40,13 @@ public class ScanLIne implements Filler {
 
             Edge edge = new Edge(p1, p2);
 
-            //hranu ulozim do seznamu
+            //hranu uložím do seznamu pokud není horizontální
             if(!edge.isHorizontal()) {
                 edge.orientate();
                 edges.add(edge);
             }
         }
+        //Uložení min a max hodnoty Y v oblasti kde bude probíhat scan-line
         int yMin = polygon.getPoint(0).getY();
         int yMax = yMin;
 
@@ -60,22 +61,26 @@ public class ScanLIne implements Filler {
         }
         rasterizer.setColor(Color.CYAN.getRGB());
 
+
         for (int y = yMin; y <= yMax; y++) {
+            //seznam průsečíků
             List<Integer> intersections = new ArrayList<>();
 
+            //zjišťujeme pro každou hranu polygonu zda má průsečík s aktuální horizontální čárou
             for (Edge edge : edges) {
                 if(edge.intersectionExist(y)){
                     int xIntersection = edge.getIntersection(y);
                     intersections.add(xIntersection);
                 }
             }
-
+            //seřazení průsečíků podle X souřadnic
             intersections.sort(Integer::compareTo);
 
+            //procházení všech úrůsečíků po dvou, pro vykreslení horiznotální čáry mezi nimi
             for (int i = 0; i < intersections.size() - 1; i +=2) {
-                int xStart = intersections.get(i);
-                int xEnd = intersections.get(i+1);
-                Line line = new Line(xStart, y, xEnd, y, 1);
+                int xStart = intersections.get(i);//počátek
+                int xEnd = intersections.get(i+1);//konec
+                Line line = new Line(xStart, y, xEnd, y, 1);//vytvoření čáry
                 rasterizer.rasterize(line);
             }
         }
