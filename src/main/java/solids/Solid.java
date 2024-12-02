@@ -1,6 +1,6 @@
 package solids;
 
-import transforms.Point3D;
+import transforms.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +9,7 @@ import java.util.List;
 public class Solid {
     protected List<Point3D> vb = new ArrayList<>();
     protected List<Integer> ib = new ArrayList<>();
-
+    protected Col color = new Col(0xffffff);
 
     //list pro barvy
     //boolean isactive po kliknuti na teleso se z nej stane oznacene a zmeni barvu
@@ -26,4 +26,5 @@ public class Solid {
     public List<Integer> getIb() {
         return ib;
     }
+
 }

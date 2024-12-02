@@ -8,6 +8,12 @@ import solids.Axes;
 import solids.Cube;
 import solids.Solid;
 import view.Panel;
+import transforms.*;
+
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Controller3D implements Controller{
     private final Panel panel;
@@ -19,7 +25,11 @@ public class Controller3D implements Controller{
     private Solid cube;
     private Solid axes;
 
+    private double angleX = 0;
+    private double angleY = 0;
+
     public Controller3D(Panel panel) {
+
         this.panel = panel;
         this.raster = panel.getRasterBufferedImage();
 
@@ -41,6 +51,24 @@ public class Controller3D implements Controller{
 
     @Override
     public void InitListeners() {
+        panel.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_UP){
+                    angleY += 1;
+                }
+                if (e.getKeyCode() == KeyEvent.VK_DOWN){
+                    angleY -= 1;
+                }
+                if (e.getKeyCode() == KeyEvent.VK_LEFT){
+                    angleX += 1;
+                }
+                if (e.getKeyCode() == KeyEvent.VK_RIGHT){
+                    angleX -= 1;
+                }
+                RanderScene();
+            }
+        });
 
     }
 
