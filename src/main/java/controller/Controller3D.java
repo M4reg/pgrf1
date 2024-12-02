@@ -31,7 +31,7 @@ public class Controller3D implements Controller{
                 panel.getWidth()
         );
 
-    }//pokus
+    }
 
     @Override
     public void InitObjects() {
