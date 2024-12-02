@@ -33,7 +33,6 @@ public class Controller3D implements Controller{
 
     }
 
-
     @Override
     public void InitObjects() {
         cube = new Cube();
@@ -50,5 +49,7 @@ public class Controller3D implements Controller{
         wiredRanderer.renderSolid(cube);
         panel.repaint();
     }
+
+
 }
 
