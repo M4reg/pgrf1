@@ -19,11 +19,19 @@ public class Controller3D implements Controller{
     private final Panel panel;
     private Raster raster;
 
+    //Randerers
     private LineRasterizer lineRasterizer;
     private WiredRanderer wiredRanderer;
 
-    private Solid cube;
+    //Solids
+    private Solid cube1;
+    private Solid cube2;
     private Solid axes;
+
+    //kamera
+    private Camera camera;
+    private final double cameraSpeed = 0.5;
+    private boolean isFirstPerson = false;
 
     private double angleX = 0;
     private double angleY = 0;
@@ -32,21 +40,37 @@ public class Controller3D implements Controller{
 
         this.panel = panel;
         this.raster = panel.getRasterBufferedImage();
+        Mat4 proj = new Mat4PerspRH(Math.toRadians(90), (double) panel.getHeight() / panel.getWidth(),
+                0.1,
+                100
+        );
 
         lineRasterizer = new LineRasterizerGraphics(raster);
-
         wiredRanderer = new WiredRanderer(
                 lineRasterizer,
                 panel.getHeight(),
-                panel.getWidth()
+                panel.getWidth(),
+                new Mat4(),
+                proj
         );
 
     }
 
     @Override
     public void InitObjects() {
-        cube = new Cube();
+        initCamera();
         axes = new Axes();
+        cube1 = new Cube();
+        cube2 = new Cube();
+
+        Mat4 scale = new Mat4Scale(0.3);
+        //posunut nahoru
+        Mat4 transl = new Mat4Transl(0,0,1.5);
+
+        cube2.setModel(scale.mul(transl));
+    }
+    private void initCamera() {
+        camera = new Camera(new Vec3D(0,0,0), Math.PI+15,Math.PI * 0.125, 5,isFirstPerson);
     }
 
     @Override
@@ -74,7 +98,15 @@ public class Controller3D implements Controller{
 
     public void RanderScene(){
         panel.clear(0xFFFFFF);
-        wiredRanderer.renderSolid(cube);
+
+        List<Solid> solids = new ArrayList<>();
+        solids.add(cube1);
+        solids.add(cube2);
+        solids.add(axes);
+
+        wiredRanderer.setView(camera.getViewMatrix());
+        wiredRanderer.renderSolids(solids);
+        wiredRanderer.renderSolid(axes);
         panel.repaint();
     }
 

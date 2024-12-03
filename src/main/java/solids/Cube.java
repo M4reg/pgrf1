@@ -1,18 +1,19 @@
 package solids;
 
+import transforms.Mat4Identity;
 import transforms.Point3D;
 
 public class Cube extends Solid {
     public Cube() {
 
-        vb.add(new Point3D(-0.3,-0.4,0.4));     //0
-        vb.add(new Point3D(0.3,-0.4,0.4));      //1
-        vb.add(new Point3D(0.3,0.4,0.4));       //2
-        vb.add(new Point3D(-0.3,0.4,0.4));      //3
-        vb.add(new Point3D(-0.3,-0.4,-0.4));    //4
-        vb.add(new Point3D(0.3,-0.4,-0.4));     //5
-        vb.add(new Point3D(0.3,0.4,-0.4));      //6
-        vb.add(new Point3D(-0.3,0.4,-0.4));     //7
+        vb.add(new Point3D(-0.3,-0.3,0.3));     //0
+        vb.add(new Point3D(0.3,-0.3,0.3));      //1
+        vb.add(new Point3D(0.3,0.3,0.3));       //2
+        vb.add(new Point3D(-0.3,0.3,0.3));      //3
+        vb.add(new Point3D(-0.3,-0.3,-0.3));    //4
+        vb.add(new Point3D(0.3,-0.3,-0.3));     //5
+        vb.add(new Point3D(0.3,0.3,-0.3));      //6
+        vb.add(new Point3D(-0.3,0.3,-0.3));     //7
 
         //typologie
         addIndices(
@@ -29,5 +30,7 @@ public class Cube extends Solid {
                 2,6,
                 3,7
         );
+
+        model = new Mat4Identity();
     }
 }
