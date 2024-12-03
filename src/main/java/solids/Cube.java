@@ -3,6 +3,8 @@ package solids;
 import transforms.Mat4Identity;
 import transforms.Point3D;
 
+import java.awt.*;
+
 public class Cube extends Solid {
     public Cube() {
 
@@ -31,6 +33,9 @@ public class Cube extends Solid {
                 3,7
         );
 
+        for (int i = 0; i < getIb().size()/2; i++) {
+            colors.add(Color.BLACK);
+        }
         model = new Mat4Identity();
     }
 }

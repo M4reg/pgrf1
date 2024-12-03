@@ -12,6 +12,8 @@ import transforms.*;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,14 +35,17 @@ public class Controller3D implements Controller{
     private final double cameraSpeed = 0.5;
     private boolean isFirstPerson = false;
 
-    private double angleX = 0;
+    private double angleX = 10;
     private double angleY = 0;
+    private double radius = 5;
 
     public Controller3D(Panel panel) {
 
         this.panel = panel;
         this.raster = panel.getRasterBufferedImage();
-        Mat4 proj = new Mat4PerspRH(Math.toRadians(90), (double) panel.getHeight() / panel.getWidth(),
+        Mat4 proj = new Mat4PerspRH(
+                Math.toRadians(90),
+                (double) panel.getHeight() / panel.getWidth(),
                 0.1,
                 100
         );
@@ -63,14 +68,18 @@ public class Controller3D implements Controller{
         cube1 = new Cube();
         cube2 = new Cube();
 
-        Mat4 scale = new Mat4Scale(0.3);
+        Mat4 scale = new Mat4Scale(0.4);
         //posunut nahoru
-        Mat4 transl = new Mat4Transl(0,0,1.5);
-
+        Mat4 transl = new Mat4Transl(0,0,0.5);
         cube2.setModel(scale.mul(transl));
     }
     private void initCamera() {
-        camera = new Camera(new Vec3D(0,0,0), Math.PI+15,Math.PI * 0.125, 5,isFirstPerson);
+        camera = new Camera(new Vec3D(0,0,0),
+                Math.PI+angleX,
+                Math.PI * 0.125 + angleY,
+                radius,
+                isFirstPerson
+        );
     }
 
     @Override
@@ -79,17 +88,32 @@ public class Controller3D implements Controller{
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_UP){
-                    angleY += 1;
+                    angleY += 0.1;
                 }
                 if (e.getKeyCode() == KeyEvent.VK_DOWN){
-                    angleY -= 1;
+                    angleY -= 0.1;
                 }
                 if (e.getKeyCode() == KeyEvent.VK_LEFT){
-                    angleX += 1;
+                    angleX += 0.1;
                 }
                 if (e.getKeyCode() == KeyEvent.VK_RIGHT){
-                    angleX -= 1;
+                    angleX -= 0.1;
                 }
+                initCamera();
+                RanderScene();
+            }
+        });
+
+        panel.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                int rotation = e.getWheelRotation();
+                if (rotation < 0){
+                    radius = Math.max(radius - 0.5,1);
+                } else if (rotation >  0) {
+                    radius = Math.min(radius + 0.5,100);
+                }
+                initCamera();
                 RanderScene();
             }
         });
@@ -99,6 +123,10 @@ public class Controller3D implements Controller{
     public void RanderScene(){
         panel.clear(0xFFFFFF);
 
+
+        cube1.setModel(new Mat4Identity());
+        cube2.setModel(new Mat4Scale(0.4).mul(new Mat4Transl(0,0,0.5)));
+
         List<Solid> solids = new ArrayList<>();
         solids.add(cube1);
         solids.add(cube2);
@@ -106,7 +134,6 @@ public class Controller3D implements Controller{
 
         wiredRanderer.setView(camera.getViewMatrix());
         wiredRanderer.renderSolids(solids);
-        wiredRanderer.renderSolid(axes);
         panel.repaint();
     }
 

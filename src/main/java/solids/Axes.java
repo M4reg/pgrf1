@@ -14,8 +14,6 @@ public class Axes extends Solid{
         addIndices(0,1); //definice linie pro osu X
         colors.add(Color.red);
 
-        color = new Col(0xff0000); // červená barva pro osu x
-
         //Y osa
         vb.add(new Point3D(0,0,0));
         vb.add(new Point3D(0,1,0));

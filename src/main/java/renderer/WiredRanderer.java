@@ -27,7 +27,6 @@ public class WiredRanderer {
     public void renderSolid(Solid solid) {
         Mat4 mvp = new Mat4(solid.getModel()).mul(view).mul(proj);
 
-
         //iteruji po dvojicích
         for (int i = 0; i < solid.getIb().size(); i+=2) {
             int indexA = solid.getIb().get(i);
@@ -48,6 +47,8 @@ public class WiredRanderer {
                 Vec3D pointAInWindow = transformToWindow(new Vec3D(pointA));
                 Vec3D pointBInWindow = transformToWindow(new Vec3D(pointB));
 
+                Color colorA = solid.getColors().get(i/2);
+                Color colorB = solid.getColors().get(i/2);
 
                 Line line = new Line(
                         (int) Math.round(pointAInWindow.getX()),
@@ -56,7 +57,7 @@ public class WiredRanderer {
                         (int) Math.round(pointBInWindow.getY())
                 );
 
-                rasterizer.setColor(Color.BLACK);
+                rasterizer.setColor(colorA);
                 rasterizer.rasterize(line);
             }
         }
