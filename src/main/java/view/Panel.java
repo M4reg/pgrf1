@@ -12,12 +12,10 @@ public class Panel extends JPanel {
 
     public Panel() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
-
-        //Aby panel mohl přijímat klávesové události
-        setFocusable(true);
-        requestFocusInWindow();
         rasterBufferedImage = new RasterBufferedImage(WIDTH, HEIGHT);
         rasterBufferedImage.setClearColor(Color.BLACK.getRGB());
+        setFocusable(true);
+        requestFocusInWindow();
 
     }
 

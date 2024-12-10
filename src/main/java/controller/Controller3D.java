@@ -4,16 +4,11 @@ import rasterizer.LineRasterizer;
 import rasterizer.LineRasterizerGraphics;
 import rasterizer.Raster;
 import renderer.WiredRanderer;
-import solids.Axes;
-import solids.Cube;
-import solids.Solid;
+import solids.*;
 import view.Panel;
 import transforms.*;
 
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,28 +20,35 @@ public class Controller3D implements Controller{
     private LineRasterizer lineRasterizer;
     private WiredRanderer wiredRanderer;
 
+    private List<Solid> solids = new ArrayList<>();
+
     //Solids
-    private Solid cube1;
-    private Solid cube2;
-    private Solid axes;
+    private Solid cube1, cube2, axes, tetrahedron, pyramid;
 
     //kamera
     private Camera camera;
     private final double cameraSpeed = 0.5;
     private boolean isFirstPerson = false;
 
-    private double angleX = 10;
+    private double angleX = 1;
     private double angleY = 0;
     private double radius = 5;
 
-    public Controller3D(Panel panel) {
+    private boolean isDragging = false;
+    private int lastMouseX, lastMouseY;
+    private final double sensitivity = 0.005;
 
+    private boolean isPerspective = true;
+    private Mat4 proj;
+
+    public Controller3D(Panel panel) {
         this.panel = panel;
         this.raster = panel.getRasterBufferedImage();
-        Mat4 proj = new Mat4PerspRH(
+
+        proj = new Mat4PerspRH(
                 Math.toRadians(90),
                 (double) panel.getHeight() / panel.getWidth(),
-                0.1,
+                0.01,
                 100
         );
 
@@ -58,6 +60,9 @@ public class Controller3D implements Controller{
                 new Mat4(),
                 proj
         );
+        InitObjects();
+        InitListeners();
+        renderScene();
 
     }
 
@@ -67,16 +72,27 @@ public class Controller3D implements Controller{
         axes = new Axes();
         cube1 = new Cube();
         cube2 = new Cube();
+        tetrahedron = new Tetrahedron();
+        pyramid = new Pyramid();
 
         Mat4 scale = new Mat4Scale(0.4);
         //posunut nahoru
-        Mat4 transl = new Mat4Transl(0,0,0.5);
+        Mat4 transl = new Mat4Transl(0,0,1.4);
         cube2.setModel(scale.mul(transl));
+        tetrahedron.setModel(new Mat4Transl(-2,0,0));
+        pyramid.setModel(new Mat4Transl(2,0,0));
+
+        solids.add(cube1);
+        solids.add(cube2);
+        solids.add(axes);
+        solids.add(tetrahedron);
+        solids.add(pyramid);
+
     }
     private void initCamera() {
         camera = new Camera(new Vec3D(0,0,0),
-                Math.PI+angleX,
-                Math.PI * 0.125 + angleY,
+                Math.PI + angleX,
+                Math.PI * -0.125 + angleY,
                 radius,
                 isFirstPerson
         );
@@ -87,54 +103,82 @@ public class Controller3D implements Controller{
         panel.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_UP){
-                    angleY += 0.1;
+                switch (e.getKeyCode()){
+                    case KeyEvent.VK_A: camera = camera.left(cameraSpeed); break;
+                    case KeyEvent.VK_S: camera = camera.backward(cameraSpeed); break;
+                    case KeyEvent.VK_D: camera = camera.right(cameraSpeed); break;
+                    case KeyEvent.VK_W: camera = camera.forward(cameraSpeed); break;
+                    case KeyEvent.VK_SHIFT: camera = camera.up(cameraSpeed); break;
+                    case KeyEvent.VK_CONTROL: camera = camera.down(cameraSpeed); break;
+                    case KeyEvent.VK_P: toggleProjection(); break;
                 }
-                if (e.getKeyCode() == KeyEvent.VK_DOWN){
-                    angleY -= 0.1;
-                }
-                if (e.getKeyCode() == KeyEvent.VK_LEFT){
-                    angleX += 0.1;
-                }
-                if (e.getKeyCode() == KeyEvent.VK_RIGHT){
-                    angleX -= 0.1;
-                }
-                initCamera();
-                RanderScene();
+                renderScene();
             }
         });
 
-        panel.addMouseWheelListener(new MouseWheelListener() {
+        panel.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                int rotation = e.getWheelRotation();
-                if (rotation < 0){
-                    radius = Math.max(radius - 0.5,1);
-                } else if (rotation >  0) {
-                    radius = Math.min(radius + 0.5,100);
+            public void mousePressed(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1){
+                    isDragging = true;
+                    lastMouseX = e.getX();
+                    lastMouseY = e.getY();
                 }
-                initCamera();
-                RanderScene();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1){
+                    isDragging = false;
+                }
             }
         });
 
+        panel.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (isDragging) {
+                    int dx = e.getX() - lastMouseX;
+                    int dy = e.getY() - lastMouseY;
+
+                    angleX -= dx * sensitivity;
+                    angleY -= dy * sensitivity;
+
+                    // Omezíme vertikální úhel, aby kamera nemohla "převrátit"
+                    angleY = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, angleY));
+                    camera = camera.withAzimuth(Math.PI + angleX).withZenith(Math.PI * -0.125 + angleY);
+                    lastMouseX = e.getX();
+                    lastMouseY = e.getY();
+
+                    renderScene();
+                }
+            }
+        });
+
+        panel.addMouseWheelListener(e->{
+            int rotation = e.getWheelRotation();
+            camera = camera.addRadius(rotation * cameraSpeed * 0.5);
+            renderScene();
+        });
     }
 
-    public void RanderScene(){
+    private void toggleProjection() {
+        isPerspective = !isPerspective;
+        if (isPerspective){
+            proj = new Mat4PerspRH(Math.toRadians(90), (double) panel.getHeight() / panel.getWidth(), 0.01,100);
+
+        }else {
+            proj = new Mat4OrthoRH(8,6,0.01,100);
+        }
+        wiredRanderer.setProj(proj);
+    }
+
+    public void renderScene(){
         panel.clear(0xFFFFFF);
-
-
-        cube1.setModel(new Mat4Identity());
-        cube2.setModel(new Mat4Scale(0.4).mul(new Mat4Transl(0,0,0.5)));
-
-        List<Solid> solids = new ArrayList<>();
-        solids.add(cube1);
-        solids.add(cube2);
-        solids.add(axes);
-
         wiredRanderer.setView(camera.getViewMatrix());
         wiredRanderer.renderSolids(solids);
         panel.repaint();
+
     }
 
 

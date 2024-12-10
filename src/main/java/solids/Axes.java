@@ -10,19 +10,19 @@ public class Axes extends Solid{
     public Axes() {
         //X osa
         vb.add(new Point3D(0,0,0)); //počáteční bod osy X
-        vb.add(new Point3D(1,0,0)); //konečný bod osy X
+        vb.add(new Point3D(5,0,0)); //konečný bod osy X
         addIndices(0,1); //definice linie pro osu X
         colors.add(Color.red);
 
         //Y osa
         vb.add(new Point3D(0,0,0));
-        vb.add(new Point3D(0,1,0));
+        vb.add(new Point3D(0,5,0));
         addIndices(2,3);
         colors.add(Color.green);
 
         //Z osa
         vb.add(new Point3D(0,0,0));
-        vb.add(new Point3D(0,0,1));
+        vb.add(new Point3D(0,0,5));
         addIndices(4,5);
         colors.add(Color.blue);
 

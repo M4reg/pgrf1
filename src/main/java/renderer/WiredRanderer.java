@@ -44,11 +44,11 @@ public class WiredRanderer {
                 Point3D aDehomog = pointA.mul(1/pointA.getW());
                 Point3D bDehomog = pointB.mul(1/pointB.getW());
 
-                Vec3D pointAInWindow = transformToWindow(new Vec3D(pointA));
-                Vec3D pointBInWindow = transformToWindow(new Vec3D(pointB));
+                Vec3D pointAInWindow = transformToWindow(new Vec3D(aDehomog));
+                Vec3D pointBInWindow = transformToWindow(new Vec3D(bDehomog));
 
-                Color colorA = solid.getColors().get(i/2);
-                Color colorB = solid.getColors().get(i/2);
+
+
 
                 Line line = new Line(
                         (int) Math.round(pointAInWindow.getX()),
@@ -56,8 +56,8 @@ public class WiredRanderer {
                         (int) Math.round(pointBInWindow.getX()),
                         (int) Math.round(pointBInWindow.getY())
                 );
-
-                rasterizer.setColor(colorA);
+                Color color = solid.getColors().get(i/2);
+                rasterizer.setColor(color);
                 rasterizer.rasterize(line);
             }
         }

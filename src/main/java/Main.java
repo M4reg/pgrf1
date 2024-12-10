@@ -9,10 +9,7 @@ public class Main {
             @Override
             public void run() {
                 Window window = new Window();
-                Controller3D controller3D = new Controller3D(window.getPanel());
-                controller3D.InitListeners();
-                controller3D.InitObjects();
-                controller3D.RanderScene();
+                new Controller3D(window.getPanel());
             }
         });
 
