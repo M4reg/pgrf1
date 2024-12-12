@@ -8,6 +8,7 @@ import solids.*;
 import view.Panel;
 import transforms.*;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -32,6 +33,8 @@ public class Controller3D implements Controller{
     private final double cameraSpeed = 0.5;
     private boolean isFirstPerson = false;
 
+    private Timer animationTimer;
+
     private double angleX = 1;
     private double angleY = 0;
     private double radius = 5;
@@ -48,6 +51,8 @@ public class Controller3D implements Controller{
     private boolean scalingMode = false;
     private boolean movingMode = false;
     private boolean rotatingMode = false;
+    private boolean isAnimating = false;
+    private int animationFrame = 0;
 
 
 
@@ -70,11 +75,22 @@ public class Controller3D implements Controller{
                 new Mat4(),
                 proj
         );
+
+        animationTimer = new Timer(35, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                animateCube();
+                renderScene();
+                animationFrame++;
+            }
+        });
+
         InitObjects();
         InitListeners();
         renderScene();
 
     }
+
 
     @Override
     public void InitObjects() {
@@ -100,7 +116,6 @@ public class Controller3D implements Controller{
         cubicSolid1.setModel(new Mat4Transl(-1,1,1));
         Solid cubicSolid3 = new Cubic3D("COONS");
         cubicSolid1.setModel(new Mat4Transl(-1,1,1));
-
 
         solids.add(cube1);
         solids.add(cube2);
@@ -134,6 +149,7 @@ public class Controller3D implements Controller{
                     case KeyEvent.VK_R: selectNextSolid(); break;
                     case KeyEvent.VK_T: selectPreviousSolid(); break;
                     case KeyEvent.VK_C: initCamera(); break;
+                    case KeyEvent.VK_N: toggleAnimation(); break;
 
                     case KeyEvent.VK_M:
                         movingMode = !movingMode;
@@ -268,6 +284,24 @@ public class Controller3D implements Controller{
             renderScene();
         });
     }
+
+    private void toggleAnimation() {
+        if(isAnimating){
+            animationTimer.stop();
+        }else {
+            animationTimer.start();
+        }
+        isAnimating = !isAnimating;
+    }
+
+
+    private void animateCube() {
+        if (cube2 == null)return;
+        double movement = Math.sin(animationFrame * 0.06) * 0.2;
+        Mat4 translation = new Mat4Transl(movement,movement,0);
+        cube2.setModel(cube2.getModel().mul(translation));
+    }
+
     private void updateSolidColors(){
         for (int i = 0; i < solids.size(); i++) {
             Solid solid = solids.get(i);
@@ -325,23 +359,20 @@ public class Controller3D implements Controller{
         // Nastavíme novou modelovou matici
         selected.setModel(newModelMatrix);
     }
-    private void rotateSelectedX(double angle) {
+    private void rotateSelected(double angle, Vec3D axis) {
         Solid selected = solids.get(selectedSolidIndex);
-        // Rotate around the X-axis
-        Mat4 rotation = new Mat4RotX(angle);  // Rotation matrix for the X-axis
+        //Otáčej okolo dané osy
+        Mat4 rotation = new Mat4Rot(angle,axis);
         selected.setModel(rotation.mul(selected.getModel()));
+    }
+    private void rotateSelectedX(double angle) {
+        rotateSelected(angle,new Vec3D(1,0,0));// osa X
     }
     private void rotateSelectedY(double angle) {
-        Solid selected = solids.get(selectedSolidIndex);
-        // Rotate around the Y-axis
-        Mat4 rotation = new Mat4RotY(angle);  // Rotation matrix for the Y-axis
-        selected.setModel(rotation.mul(selected.getModel()));
+        rotateSelected(angle,new Vec3D(0,1,0));// osa Y
     }
     private void rotateSelectedZ(double angle) {
-        Solid selected = solids.get(selectedSolidIndex);
-        // Rotate around the Z-axis
-        Mat4 rotation = new Mat4RotZ(angle);  // Rotation matrix for the Z-axis
-        selected.setModel(rotation.mul(selected.getModel()));
+        rotateSelected(angle,new Vec3D(0,0,1));// osa Z
     }
 
     private void translateSelected(double x, double y, double z) {

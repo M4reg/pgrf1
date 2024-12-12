@@ -25,6 +25,6 @@ public class Axes extends Solid{
         addIndices(4,5);
         colors.add(Color.blue);
 
-        model = new Mat4Identity();
+        model =  new Mat4Identity();
     }
 }

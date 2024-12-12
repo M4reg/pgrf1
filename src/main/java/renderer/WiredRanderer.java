@@ -2,6 +2,7 @@ package renderer;
 
 import model.Line;
 import rasterizer.LineRasterizer;
+import solids.Axes;
 import solids.Solid;
 import transforms.Mat4;
 import transforms.Point3D;
