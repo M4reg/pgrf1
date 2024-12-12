@@ -13,6 +13,7 @@ public class Solid {
     protected Col color = new Col(0xffffff);
     protected List<Color> colors = new ArrayList<>();
     protected Mat4 model;
+    private Vec3D position = new Vec3D(0,0,0);
 
     protected void addIndices(Integer...indices)
     {
@@ -51,5 +52,11 @@ public class Solid {
     }
     public boolean isAxes(){
         return this instanceof Axes;
+    }
+    public Vec3D getPosition() {
+        return position;
+    }
+    public void setPosition(Vec3D position) {
+        this.position = position;
     }
 }

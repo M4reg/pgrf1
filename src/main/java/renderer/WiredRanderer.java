@@ -53,7 +53,13 @@ public class WiredRanderer {
                         (int) Math.round(pointBInWindow.getX()),
                         (int) Math.round(pointBInWindow.getY())
                 );
-                Color color = solid.getColors().get(i/2);
+                Color color;
+                if ((i / 2) < solid.getColors().size()){
+                    color = solid.getColors().get(i/2);
+                }else{
+                    color = Color.BLACK;
+                }
+
                 rasterizer.setColor(color);
                 rasterizer.rasterize(line);
             }
