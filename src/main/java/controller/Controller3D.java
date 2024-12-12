@@ -110,21 +110,25 @@ public class Controller3D implements Controller{
         tetrahedron.setModel(new Mat4Transl(-2.5,0,0));
         pyramid.setModel(new Mat4Transl(2.5,0,0));
 
-        Solid cubicSolid1 = new Cubic3D("BEZIER");
-        cubicSolid1.setModel(new Mat4Transl(-1,1,1));
-        Solid cubicSolid2 = new Cubic3D("FERGUSON");
-        cubicSolid1.setModel(new Mat4Transl(-1,1,1));
-        Solid cubicSolid3 = new Cubic3D("COONS");
-        cubicSolid1.setModel(new Mat4Transl(-1,1,1));
+        Solid cubicbezier = new Cubic3D("BEZIER");
+        cubicbezier.setModel(new Mat4Transl(0,0,0));
+        Solid cubicferguson = new Cubic3D("FERGUSON");
+        cubicferguson.setModel(new Mat4Transl(-1,1,-1));
+        Solid cubiccoons = new Cubic3D("COONS");
+        cubiccoons.setModel(new Mat4Transl(-1,1,2));
+        Solid parametricCurve = new ParametricCurve();
+        parametricCurve.setModel(new Mat4Transl(-1,1,1));
 
         solids.add(cube1);
         solids.add(cube2);
         solids.add(tetrahedron);
         solids.add(pyramid);
-        solids.add(cubicSolid1);
-        solids.add(cubicSolid2);
-        solids.add(cubicSolid3);
+        solids.add(cubicbezier);
+        solids.add(cubicferguson);
+        solids.add(cubiccoons);
+        solids.add(parametricCurve);
         solids.add(axes);
+
     }
     private void initCamera() {
         camera = new Camera(new Vec3D(0,0,0),
