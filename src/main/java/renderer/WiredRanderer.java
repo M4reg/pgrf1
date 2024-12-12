@@ -47,9 +47,6 @@ public class WiredRanderer {
                 Vec3D pointAInWindow = transformToWindow(new Vec3D(aDehomog));
                 Vec3D pointBInWindow = transformToWindow(new Vec3D(bDehomog));
 
-
-
-
                 Line line = new Line(
                         (int) Math.round(pointAInWindow.getX()),
                         (int) Math.round(pointAInWindow.getY()),

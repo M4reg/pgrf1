@@ -8,6 +8,7 @@ import solids.*;
 import view.Panel;
 import transforms.*;
 
+import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ public class Controller3D implements Controller{
     private WiredRanderer wiredRanderer;
 
     private List<Solid> solids = new ArrayList<>();
+    private int selectedSolidIndex = -1;
 
     //Solids
     private Solid cube1, cube2, axes, tetrahedron, pyramid;
@@ -84,9 +86,9 @@ public class Controller3D implements Controller{
 
         solids.add(cube1);
         solids.add(cube2);
-        solids.add(axes);
         solids.add(tetrahedron);
         solids.add(pyramid);
+        solids.add(axes);
 
     }
     private void initCamera() {
@@ -111,6 +113,9 @@ public class Controller3D implements Controller{
                     case KeyEvent.VK_SHIFT: camera = camera.up(cameraSpeed); break;
                     case KeyEvent.VK_CONTROL: camera = camera.down(cameraSpeed); break;
                     case KeyEvent.VK_P: toggleProjection(); break;
+                    case KeyEvent.VK_R: selectNextSolid(); break;
+                    case KeyEvent.VK_T: selectPreviousSolid(); break;
+                    case KeyEvent.VK_C: initCamera(); break;
                 }
                 renderScene();
             }
@@ -144,8 +149,6 @@ public class Controller3D implements Controller{
                     angleX -= dx * sensitivity;
                     angleY -= dy * sensitivity;
 
-                    // Omezíme vertikální úhel, aby kamera nemohla "převrátit"
-                    angleY = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, angleY));
                     camera = camera.withAzimuth(Math.PI + angleX).withZenith(Math.PI * -0.125 + angleY);
                     lastMouseX = e.getX();
                     lastMouseY = e.getY();
@@ -161,6 +164,31 @@ public class Controller3D implements Controller{
             renderScene();
         });
     }
+    private void updateSolidColors(){
+        for (int i = 0; i < solids.size(); i++) {
+            Solid solid = solids.get(i);
+
+            if (solid.isAxes()){
+                continue;
+            }
+            solid.setAllColors(i == selectedSolidIndex ? new Color(254, 138, 24) : new Color(0, 0, 0));
+        }
+    }
+
+    private void selectNextSolid(){
+        if (!solids.isEmpty()){
+            selectedSolidIndex = (selectedSolidIndex + 1) % solids.size();
+            updateSolidColors();
+        }
+    }
+
+    private void selectPreviousSolid(){
+        if (!solids.isEmpty()){
+            selectedSolidIndex = (selectedSolidIndex - 1 + solids.size()) % solids.size();
+            updateSolidColors();
+        }
+    }
+
 
     private void toggleProjection() {
         isPerspective = !isPerspective;
@@ -168,7 +196,7 @@ public class Controller3D implements Controller{
             proj = new Mat4PerspRH(Math.toRadians(90), (double) panel.getHeight() / panel.getWidth(), 0.01,100);
 
         }else {
-            proj = new Mat4OrthoRH(8,6,0.01,100);
+            proj = new Mat4OrthoRH(12,9,0.01,100);
         }
         wiredRanderer.setProj(proj);
     }

@@ -14,9 +14,6 @@ public class Solid {
     protected List<Color> colors = new ArrayList<>();
     protected Mat4 model;
 
-    //list pro barvy
-    //boolean isactive po kliknuti na teleso se z nej stane oznacene a zmeni barvu
-
     protected void addIndices(Integer...indices)
     {
         ib.addAll(Arrays.asList(indices));
@@ -38,11 +35,21 @@ public class Solid {
         this.colors = colors;
     }
 
+    public void setAllColors(Color color){
+        colors.clear();
+        for (int i = 0; i < ib.size()/2; i++) {
+            colors.add(color);
+        }
+    }
+
     public Mat4 getModel() {
         return model;
     }
 
     public void setModel(Mat4 model) {
         this.model = model;
+    }
+    public boolean isAxes(){
+        return this instanceof Axes;
     }
 }
