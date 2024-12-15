@@ -11,7 +11,6 @@ public class Tetrahedron extends Solid{
         vb.add(new Point3D(-1, -1, 1));
         vb.add(new Point3D(-1, 1, -1));
         vb.add(new Point3D(1, -1, -1));
-
         addIndices(
                 0,1,
                 0,2,

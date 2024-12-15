@@ -7,7 +7,6 @@ import renderer.WiredRanderer;
 import solids.*;
 import view.Panel;
 import transforms.*;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -18,7 +17,7 @@ public class Controller3D implements Controller{
     private final Panel panel;
     private Raster raster;
 
-    //Randerers
+    //Renderery
     private LineRasterizer lineRasterizer;
     private WiredRanderer wiredRanderer;
 
@@ -33,12 +32,15 @@ public class Controller3D implements Controller{
     private final double cameraSpeed = 0.5;
     private boolean isFirstPerson = false;
 
+    //časovač pro animace
     private Timer animationTimer;
 
+    //úhly kamery
     private double angleX = 1;
     private double angleY = 0;
     private double radius = 5;
 
+    //otáčení myší
     private boolean isDragging = false;
     private int lastMouseX, lastMouseY;
     private final double sensitivity = 0.005;
@@ -60,6 +62,7 @@ public class Controller3D implements Controller{
         this.panel = panel;
         this.raster = panel.getRasterBufferedImage();
 
+        //projekční matice pro perspektivní zobrazení
         proj = new Mat4PerspRH(
                 Math.toRadians(90),
                 (double) panel.getHeight() / panel.getWidth(),
@@ -76,6 +79,7 @@ public class Controller3D implements Controller{
                 proj
         );
 
+        //časovač pro animace
         animationTimer = new Timer(35, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -95,14 +99,16 @@ public class Controller3D implements Controller{
     @Override
     public void InitObjects() {
         initCamera();
+
+        //vytvoření objektů
         axes = new Axes();
         cube1 = new Cube();
         cube2 = new Cube();
         tetrahedron = new Tetrahedron();
         pyramid = new Pyramid();
-
         solids.clear();
 
+        //transformace na objekty
         Mat4 scale = new Mat4Scale(0.4);
         //posunut nahoru
         Mat4 transl = new Mat4Transl(0,0,1.4);
@@ -110,15 +116,17 @@ public class Controller3D implements Controller{
         tetrahedron.setModel(new Mat4Transl(-2.5,0,0));
         pyramid.setModel(new Mat4Transl(2.5,0,0));
 
+        //Křivky
         Solid cubicbezier = new Cubic3D("BEZIER");
         cubicbezier.setModel(new Mat4Transl(0,0,0));
         Solid cubicferguson = new Cubic3D("FERGUSON");
-        cubicferguson.setModel(new Mat4Transl(-1,1,-1));
+        cubicferguson.setModel(new Mat4Transl(0,0,0));
         Solid cubiccoons = new Cubic3D("COONS");
-        cubiccoons.setModel(new Mat4Transl(-1,1,2));
+        cubiccoons.setModel(new Mat4Transl(0,0,0));
         Solid parametricCurve = new ParametricCurve();
-        parametricCurve.setModel(new Mat4Transl(-1,1,1));
+        parametricCurve.setModel(new Mat4Transl(0,0,0));
 
+        //přidání do seznamu
         solids.add(cube1);
         solids.add(cube2);
         solids.add(tetrahedron);
@@ -130,7 +138,11 @@ public class Controller3D implements Controller{
         solids.add(axes);
 
     }
+    //inicializace kamery
     private void initCamera() {
+        angleX = 1;
+        angleY = 0;
+        radius = 5;
         camera = new Camera(new Vec3D(0,0,0),
                 Math.PI + angleX,
                 Math.PI * -0.125 + angleY,
@@ -144,28 +156,32 @@ public class Controller3D implements Controller{
         panel.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                //kontrola stisknutých kláves
                 switch (e.getKeyCode()){
+                    //pohyb kamery
                     case KeyEvent.VK_W: camera = camera.forward(cameraSpeed); break;
                     case KeyEvent.VK_S: camera = camera.backward(cameraSpeed); break;
                     case KeyEvent.VK_A: camera = camera.left(cameraSpeed); break;
                     case KeyEvent.VK_D: camera = camera.right(cameraSpeed); break;
+                    //změna projekce, výběr, reset kamery, spuštění animace
                     case KeyEvent.VK_P: changeProjection(); break;
                     case KeyEvent.VK_R: selectNextSolid(); break;
                     case KeyEvent.VK_T: selectPreviousSolid(); break;
                     case KeyEvent.VK_C: initCamera(); break;
                     case KeyEvent.VK_N: toggleAnimation(); break;
 
-                    case KeyEvent.VK_M:
+                    //výběr režimů
+                    case KeyEvent.VK_M: //pohyb
                         movingMode = !movingMode;
                         scalingMode = false;
                         rotatingMode = false;
                         break;
-                    case KeyEvent.VK_V:
+                    case KeyEvent.VK_V: //škálování
                         scalingMode = !scalingMode;
                         movingMode = false;
                         rotatingMode = false;
                         break;
-                    case KeyEvent.VK_B:
+                    case KeyEvent.VK_B: //otáčení
                         rotatingMode = !rotatingMode;
                         scalingMode = false;
                         movingMode = false;
@@ -176,7 +192,7 @@ public class Controller3D implements Controller{
                             // Otoč okolo osy Z
                             rotateSelectedZ(Math.toRadians(5));
                         } else if (movingMode && selectedSolidIndex != -1) {
-                            // Posouvání objektu po ose Z
+                            // Posouvání objektu nahoru po ose Z
                             translateSelected(0, 0, translationFactor);
                         } else {
                             // Posouvání kamery nahoru
@@ -189,7 +205,7 @@ public class Controller3D implements Controller{
                             // Otoč okolo osy Z
                             rotateSelectedZ(Math.toRadians(-5));
                         } else if (movingMode && selectedSolidIndex != -1) {
-                            // Posouvání objektu po ose Z
+                            // Posouvání objektu dolů po ose Z
                             translateSelected(0, 0, -translationFactor);
                         } else {
                             // Posouvání kamery dolu
@@ -205,7 +221,7 @@ public class Controller3D implements Controller{
                             scaleSelected(scaleFactor);
                         } else if (movingMode && selectedSolidIndex != -1) {
                             // Posouvání objektu po ose Y
-                            translateSelected(0, translationFactor, 0);
+                            translateSelected(0, -translationFactor, 0);
                         }
                         break;
 
@@ -214,13 +230,14 @@ public class Controller3D implements Controller{
                             // Otoč okolo osy Y
                             rotateSelectedY(Math.toRadians(-5));
                         } else if (scalingMode && selectedSolidIndex != -1) {
-                            //Zvětšujeme vybraný objekt
+                            //Zmenšujeme vybraný objekt
                             scaleSelected(1.0 / scaleFactor);
                         } else if (movingMode && selectedSolidIndex != -1) {
                             // Posouvání objektu po ose Y
-                            translateSelected(0, -translationFactor, 0);
+                            translateSelected(0, translationFactor, 0);
                         }
                         break;
+
                     // Klávesy pro translaci
                     case KeyEvent.VK_LEFT:
                         if (rotatingMode) {
@@ -228,7 +245,7 @@ public class Controller3D implements Controller{
                             rotateSelectedX(Math.toRadians(5));
                         } else if (movingMode && selectedSolidIndex != -1) {
                             // Posouvání objektu po ose X
-                            translateSelected(-translationFactor, 0, 0);
+                            translateSelected(translationFactor, 0, 0);
                         }
                         break;
                     case KeyEvent.VK_RIGHT:
@@ -237,11 +254,11 @@ public class Controller3D implements Controller{
                             rotateSelectedX(Math.toRadians(-5));
                         } else if (movingMode && selectedSolidIndex != -1) {
                             // Posouvání objektu po ose X
-                            translateSelected(translationFactor, 0, 0);
+                            translateSelected(-translationFactor, 0, 0);
                         }
                         break;
                 }
-                renderScene();
+                renderScene(); //znovu vykresli scénu
             }
         });
 
@@ -250,6 +267,7 @@ public class Controller3D implements Controller{
             public void mousePressed(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1){
                     isDragging = true;
+                    //uložení počáteční pozice myši x,y
                     lastMouseX = e.getX();
                     lastMouseY = e.getY();
                 }
@@ -258,18 +276,20 @@ public class Controller3D implements Controller{
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1){
-                    isDragging = false;
+                    isDragging = false; //zastavení tahání myši
                 }
             }
         });
 
+        //otáčení kamery při tažení myši
         panel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (isDragging) {
-                    int dx = e.getX() - lastMouseX;
-                    int dy = e.getY() - lastMouseY;
+                    int dx = e.getX() - lastMouseX; //Pohyb myši horizontálně
+                    int dy = e.getY() - lastMouseY; //Pohyb vertikálně
 
+                    // uprava úhlů kamery na základě pohybu myši
                     angleX -= dx * sensitivity;
                     angleY -= dy * sensitivity;
 
@@ -282,41 +302,45 @@ public class Controller3D implements Controller{
             }
         });
 
+
         panel.addMouseWheelListener(e->{
-            int rotation = e.getWheelRotation();
-            camera = camera.addRadius(rotation * cameraSpeed * 0.5);
+            int rotation = e.getWheelRotation(); //směr otáčení kolečka +1 nebo -1
+            camera = camera.addRadius(rotation * cameraSpeed * 0.5); //zoom in nebo out
             renderScene();
         });
     }
 
+    //start stop animace
     private void toggleAnimation() {
         if(isAnimating){
             animationTimer.stop();
         }else {
-            animationTimer.start();
+            animationTimer.start();//po stisku N zapni animaci
         }
         isAnimating = !isAnimating;
     }
-
-
+    //Pohyb kostky pro animaci
     private void animateCube() {
-        if (cube2 == null)return;
-        double movement = Math.sin(animationFrame * 0.06) * 0.2;
-        Mat4 translation = new Mat4Transl(movement,movement,0);
+        if (cube2 == null)return; //pokud existuje
+        double movement = Math.sin(animationFrame * 0.06) * 0.2; //sinusové funkce pro oscilaci kostky
+        Mat4 translation = new Mat4Transl(movement,movement,0); //pohyb v ose x a y
         cube2.setModel(cube2.getModel().mul(translation));
     }
 
+    //změna barvy tělesa na základě výběru
     private void updateSolidColors(){
         for (int i = 0; i < solids.size(); i++) {
             Solid solid = solids.get(i);
 
             if (solid.isAxes()){
-                continue;
+                continue; //osy neřešíme
             }
+            //změna barvy pokud je vybraný
             solid.setAllColors(i == selectedSolidIndex ? new Color(254, 138, 24) : new Color(0, 0, 0));
         }
     }
 
+    //výběr dalšho objektu
     private void selectNextSolid(){
         if (!solids.isEmpty()){
             selectedSolidIndex = (selectedSolidIndex + 1) % solids.size();
@@ -324,6 +348,7 @@ public class Controller3D implements Controller{
         }
     }
 
+    //výběr předchozího
     private void selectPreviousSolid(){
         if (!solids.isEmpty()){
             selectedSolidIndex = (selectedSolidIndex - 1 + solids.size()) % solids.size();
@@ -331,12 +356,15 @@ public class Controller3D implements Controller{
         }
     }
 
+    //přepnutí mezi projekcemi
     private void changeProjection() {
         isPerspective = !isPerspective;
         if (isPerspective){
+            //Perspektivní
             proj = new Mat4PerspRH(Math.toRadians(90), (double) panel.getHeight() / panel.getWidth(), 0.01,100);
 
         }else {
+            //Ortogonální
             proj = new Mat4OrthoRH(12,9,0.01,100);
         }
         wiredRanderer.setProj(proj);
@@ -344,18 +372,16 @@ public class Controller3D implements Controller{
 
     public void renderScene(){
         panel.clear(0xFFFFFF);
-        wiredRanderer.setView(camera.getViewMatrix());
-        wiredRanderer.renderSolids(solids);
+        wiredRanderer.setView(camera.getViewMatrix());//nastavení pohledu kamery na scénu
+        wiredRanderer.renderSolids(solids);//vykreslení těles ze seznamu
         panel.repaint();
-
     }
     private void scaleSelected(double scaleFactor) {
-        Solid selected = solids.get(selectedSolidIndex);
-        Vec3D position = selected.getPosition();
+        Solid selected = solids.get(selectedSolidIndex); //získání vybraného tělesa
+        Vec3D position = selected.getPosition(); //získání pozice objektu
         // Posuneme objekt do středu
         Mat4 translateToOrigin = new Mat4Transl(-position.getX(), -position.getY(), -position.getZ());
-        // Aplikujeme změnu velikosti
-        Mat4 scale = new Mat4Scale(scaleFactor);
+        Mat4 scale = new Mat4Scale(scaleFactor); //Změna velikosti
         // Vratíme objekt zpět na původní pozici
         Mat4 translateBack = new Mat4Transl(position.getX(), position.getY(), position.getZ());
         // Nová modelová matice se změnou velikosti
@@ -364,7 +390,7 @@ public class Controller3D implements Controller{
         selected.setModel(newModelMatrix);
     }
     private void rotateSelected(double angle, Vec3D axis) {
-        Solid selected = solids.get(selectedSolidIndex);
+        Solid selected = solids.get(selectedSolidIndex); //získání vybraného objektu
         //Otáčej okolo dané osy
         Mat4 rotation = new Mat4Rot(angle,axis);
         selected.setModel(rotation.mul(selected.getModel()));
@@ -380,12 +406,9 @@ public class Controller3D implements Controller{
     }
 
     private void translateSelected(double x, double y, double z) {
-        Solid selected = solids.get(selectedSolidIndex);
-        // Aplikujeme translaci
-        Mat4 translation = new Mat4Transl(x, y, z);
-        selected.setModel(selected.getModel().mul(translation));
-        selected.setPosition(selected.getPosition().add(new Vec3D(x, y, z)));
+        Solid selected = solids.get(selectedSolidIndex); //získání vybraného objektu
+        Mat4 translation = new Mat4Transl(x, y, z);//vytvoření matice pro pohyb v osách
+        selected.setModel(selected.getModel().mul(translation)); // Aplikujeme translaci
+        selected.setPosition(selected.getPosition().add(new Vec3D(x, y, z))); //aktualizace pozice tělesa
     }
-
 }
-

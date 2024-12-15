@@ -12,7 +12,7 @@ public class Pyramid extends Solid{
         vb.add(new Point3D(-1, 1, 0));  // V1 - levý horní roh základny
         vb.add(new Point3D(-1, -1, 0)); // V2 - levý dolní roh základny
         vb.add(new Point3D(1, -1, 0));  // V3 - pravý dolní roh základny
-        vb.add(new Point3D(0, 0, 1));       // V4 - vrchol jehlanu (nad středem základny)
+        vb.add(new Point3D(0, 0, 1));   // V4 - vrchol jehlanu (nad středem základny)
 
         addIndices(
                 0, 1, // Hrany základny

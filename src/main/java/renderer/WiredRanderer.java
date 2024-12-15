@@ -28,7 +28,7 @@ public class WiredRanderer {
     public void renderSolid(Solid solid) {
         Mat4 mvp = new Mat4(solid.getModel()).mul(view).mul(proj);
 
-        //iteruji po dvojicích
+        //iteruji po dvojicích přes indexy tělesa
         for (int i = 0; i < solid.getIb().size(); i+=2) {
             int indexA = solid.getIb().get(i);
             int indexB = solid.getIb().get(i + 1);
@@ -36,15 +36,23 @@ public class WiredRanderer {
             Point3D pointA = solid.getVb().get(indexA);
             Point3D pointB = solid.getVb().get(indexB);
 
+            //získání vrcholů podle indexů
             pointA = pointA.mul(mvp);
             pointB = pointB.mul(mvp);
 
-            //ořezání
-            if (isInView(pointA,pointB)) {
 
+            boolean clip = true;
+            if (solid instanceof Axes){
+                clip = false;
+            }
+            //ořezání
+            if (!clip || isInView(pointA,pointB)) {
+
+                //dehomogenizace
                 Point3D aDehomog = pointA.mul(1/pointA.getW());
                 Point3D bDehomog = pointB.mul(1/pointB.getW());
 
+                //transformace do okna
                 Vec3D pointAInWindow = transformToWindow(new Vec3D(aDehomog));
                 Vec3D pointBInWindow = transformToWindow(new Vec3D(bDehomog));
 
@@ -54,6 +62,7 @@ public class WiredRanderer {
                         (int) Math.round(pointBInWindow.getX()),
                         (int) Math.round(pointBInWindow.getY())
                 );
+                //určení barvy čáry použít černou pokud nemá solid definován jinak
                 Color color;
                 if ((i / 2) < solid.getColors().size()){
                     color = solid.getColors().get(i/2);
@@ -83,9 +92,7 @@ public class WiredRanderer {
 
         return boolA && boolB;
     }
-
-
-
+    //transformace 3D bodu na 2D souřadnice okna
     public Vec3D transformToWindow(Vec3D v) {
         return v
                 .mul(new Vec3D(1,-1,1))
@@ -93,15 +100,11 @@ public class WiredRanderer {
                 .mul(new Vec3D((double) (width - 1) /2, (double) (height - 1) /2, 1));
     }
 
+    //vykreslení
     public void renderSolids(List<Solid> solids) {
         for(Solid solid : solids) {
             renderSolid(solid);
         }
-    }
-
-
-    public void setRasterizer(LineRasterizer rasterizer) {
-        this.rasterizer = rasterizer;
     }
 
     public void setView(Mat4 view) {

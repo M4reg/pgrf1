@@ -32,10 +32,7 @@ public class Solid {
         return colors;
     }
 
-    public void setColors(List<Color> colors) {
-        this.colors = colors;
-    }
-
+    //nastavení barvy pro celé těleso na jednu barvu výběru
     public void setAllColors(Color color){
         colors.clear();
         for (int i = 0; i < ib.size()/2; i++) {

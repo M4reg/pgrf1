@@ -15,7 +15,6 @@ public class Window extends JFrame {
         add(panel);
         setVisible(true);
         pack();
-
         panel.setFocusable(true);
         panel.grabFocus();
     }

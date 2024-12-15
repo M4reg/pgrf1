@@ -16,7 +16,6 @@ public class Panel extends JPanel {
         rasterBufferedImage.setClearColor(Color.BLACK.getRGB());
         setFocusable(true);
         requestFocusInWindow();
-
     }
 
     @Override
